@@ -1,0 +1,5 @@
+LM-EA9 patch P17 (listed as VER 2.9.0)
+main change: init01 body[5]+body[7] only: 07 50 -> 40 00  [P15 champion + P13 edge byte, try first]
+probe A: device self-read version 1.8 -> 2.9 (init07 BCD nibble)
+probe B: lens name -> "TECHART LM-EA9-P17" (check body lens info / EXIF)
+report: near(1~1.5m) green-box hit rate vs P15, center AND extreme edge

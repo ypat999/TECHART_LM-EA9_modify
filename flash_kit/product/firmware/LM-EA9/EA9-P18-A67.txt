@@ -1,0 +1,5 @@
+LM-EA9 patch P18 (listed as VER 3.0.0)
+main change: init01 body[6]+body[7] only: 08 50 -> 10 00  [does @6 add anything on top of @7?]
+probe A: device self-read version 1.8 -> 3.0 (init07 BCD nibble)
+probe B: lens name -> "TECHART LM-EA9-P18" (check body lens info / EXIF)
+report: near(1~1.5m) green-box hit rate vs P15, center AND extreme edge

@@ -259,6 +259,41 @@ $a[$BODY_I01 + 5] = $lex01[11]; $a[$BODY_I01 + 6] = $lex01[12]; $a[$BODY_I01 + 7
 Set-Probes $a 0x28 "P16"
 Save-Patch $a (Join-Path $OutDir "EA9-P16-NOP23.bin")
 
+# ---------- P17..P20: second-order search around the NEW CHAMPION @7 ----------
+# Bench data (1~1.5m): P16 > P3 (detox confirmed); P15 > P16 (@7 alone beats the combo,
+# @1/@5/@6 dilute); P13 ~= P16 slightly worse but STEADIER at extreme edge (@5 = edge byte);
+# P14 clearly worse than P16 yet > orig (@6 = weak positive, redundant next to @7).
+# => KEY BYTE = @7 (50 -> 00). New baseline = P15.
+# P17 = @5+@7  (champion + edge byte: keep P15 overall, add P13 edge steadiness)  -- try first
+# P18 = @6+@7  (does @6 add anything on top of @7?)
+# P19 = @1+@7  (does @1 add anything on top of @7?)
+# P20 = @7 = 28 (midpoint 50<->00 value probe: half effect = continuous calibration,
+#       full effect = threshold/binary semantics)
+# Probes: init07 BCD 0x29/0x30/0x31/0x32 (readback 2.9/3.0/3.1/3.2), init3F name -> -Pn
+$a = $orig.Clone()
+$a[$BODY_I01 + 5] = $lex01[11]; $a[$BODY_I01 + 7] = $lex01[13]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x29 "P17"
+Save-Patch $a (Join-Path $OutDir "EA9-P17-A57.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 6] = $lex01[12]; $a[$BODY_I01 + 7] = $lex01[13]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x30 "P18"
+Save-Patch $a (Join-Path $OutDir "EA9-P18-A67.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 1] = $lex01[7]; $a[$BODY_I01 + 7] = $lex01[13]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x31 "P19"
+Save-Patch $a (Join-Path $OutDir "EA9-P19-A17.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 7] = 0x28
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x32 "P20"
+Save-Patch $a (Join-Path $OutDir "EA9-P20-A7HALF.bin")
+
 # ---------- self-verify: a patch may only break cksums that orig already had broken ----------
 Write-Output "--- verify ---"
 $FRAMES = @(,@($N05_OFF,$N05_LEN)) + @(,@($I01_OFF,$I01_LEN)) + @(,@($I08_OFF,$I08_LEN)) + @(,@($I07_OFF,$I07_LEN)) + @(,@($I3F_OFF,$I3F_LEN)) + @(,@($I34_OFF,$I34_LEN))
