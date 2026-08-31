@@ -1,0 +1,5 @@
+LM-EA9 patch P21 (listed as VER 3.3.0)
+main change: init01 body[1]+body[5]+body[7]: 9F 07 50 -> 97 40 00  [merge winners P17+P19 = P16 minus dilutant @6, try first]
+probe A: device self-read version 1.8 -> 3.3 (init07 BCD nibble)
+probe B: lens name -> "TECHART LM-EA9-P21" (check body lens info / EXIF)
+report: near(1~1.5m) hit rate AND focus speed vs P19 / P17, center AND extreme edge

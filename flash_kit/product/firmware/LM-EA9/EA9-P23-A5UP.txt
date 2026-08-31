@@ -1,0 +1,5 @@
+LM-EA9 patch P23 (listed as VER 3.5.0)
+main change: init01 body[5]+body[7]: 07 50 -> 80 00  [push @5 past native 40; single-byte variant of P17]
+probe A: device self-read version 1.8 -> 3.5 (init07 BCD nibble)
+probe B: lens name -> "TECHART LM-EA9-P23" (check body lens info / EXIF)
+report: near(1~1.5m) edge hit rate vs P17 (is higher @5 better for edge?)

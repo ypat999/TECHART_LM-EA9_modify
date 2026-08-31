@@ -294,6 +294,42 @@ $a[$BODY_I01 + 7] = 0x28
 Set-Probes $a 0x32 "P20"
 Save-Patch $a (Join-Path $OutDir "EA9-P20-A7HALF.bin")
 
+# ---------- P21..P24: combine winners + push past native ----------
+# Bench data (1~1.5m): P17(@5+@7) > P15, extreme edge now HITS sometimes;
+# P20(@7=28) < P15 unstable => @7 is a graded value, monotone toward 00 (lower=better);
+# P18(@6+@7) > P20 but < P17 => @6 stays out; P19(@1+@7) ~ P17 rate but FASTER focus,
+# best overall => @1 is inert alone yet SYNERGISTIC with @7=00.
+# Ranking: P19 >= P17 > P15 > P18 > P20. @6 is the P16 dilutant (P16 = this minus @6... minus @1@5).
+# P21 = @1+@5+@7  (merge the two winners; = P16 minus harmful @6)  -- try first, new champion candidate
+# P22 = @7 = FF   (beyond-native: if @7 read signed, FF < 00 => possible further gain; else regression)
+# P23 = @5=80 + @7=00 (push @5 past native 40; @4=80 shows 80 is in-domain)
+# P24 = @1=17 + @5+@7 (push @1 one bit past native: does more of @1 help or is 97 the sweet spot?)
+# Probes: init07 BCD 0x33..0x36 (readback 3.3..3.6), init3F name -> -Pn
+$a = $orig.Clone()
+$a[$BODY_I01 + 1] = $lex01[7]; $a[$BODY_I01 + 5] = $lex01[11]; $a[$BODY_I01 + 7] = $lex01[13]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x33 "P21"
+Save-Patch $a (Join-Path $OutDir "EA9-P21-A157.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 7] = 0xFF
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x34 "P22"
+Save-Patch $a (Join-Path $OutDir "EA9-P22-A7FF.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 5] = 0x80; $a[$BODY_I01 + 7] = $lex01[13]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x35 "P23"
+Save-Patch $a (Join-Path $OutDir "EA9-P23-A5UP.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 1] = [byte]($lex01[7] -band 0xDF)
+$a[$BODY_I01 + 5] = $lex01[11]; $a[$BODY_I01 + 7] = $lex01[13]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x36 "P24"
+Save-Patch $a (Join-Path $OutDir "EA9-P24-A1DN.bin")
+
 # ---------- self-verify: a patch may only break cksums that orig already had broken ----------
 Write-Output "--- verify ---"
 $FRAMES = @(,@($N05_OFF,$N05_LEN)) + @(,@($I01_OFF,$I01_LEN)) + @(,@($I08_OFF,$I08_LEN)) + @(,@($I07_OFF,$I07_LEN)) + @(,@($I3F_OFF,$I3F_LEN)) + @(,@($I34_OFF,$I34_LEN))
