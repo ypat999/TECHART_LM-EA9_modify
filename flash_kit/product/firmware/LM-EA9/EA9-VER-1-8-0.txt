@@ -1,0 +1,2 @@
+LM-EA9 patch ORIG (listed as VER 1.8.0)
+stock v1.8.0 firmware (rollback / baseline)

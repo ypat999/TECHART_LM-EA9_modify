@@ -1,0 +1,71 @@
+================================================================================
+TECHART LM-EA9 固件下载地址清单
+================================================================================
+
+【解包对象】
+  文件      : TECHART_Updater(USB-WIN).exe
+  大小      : 2,401,280 字节
+  类型      .NET / C# WinForms 程序集（原文件名 USBHIDControl.exe，版本 1.0.0.0）
+  窗体      Form1 "TECHART Adapter Update App"
+
+【固件清单来源（程序中硬编码的唯一 URL）】
+  http://www.techart-logic.com/product/TECHART_LST.txt
+
+【清单行格式（分号分隔，共 7 个字段）】
+  产品名 ; VID ; PID ; 版本 ; 版权 ; 固件(.bin)地址 ; 更新说明(.txt)地址
+
+【LM-EA9 的 USB 识别标识】
+  VID = 0483    PID = 575A
+  （升级程序按此 VID/PID 匹配已连接设备，再从清单中取对应型号的最新版本）
+
+--------------------------------------------------------------------------------
+一、固件二进制（.bin）下载地址 —— LM-EA9 共 7 个版本
+--------------------------------------------------------------------------------
+VER 1.8.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-8-0.bin
+VER 1.7.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-7-0.bin
+VER 1.6.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-6-0.bin
+VER 1.5.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-5-0.bin
+VER 1.4.0  http://www.techart-logic.com/product/firmware/LM-EA9/LM-EA9VER14.bin
+VER 1.2.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-2-0.bin
+VER 1.0.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-0-0.bin
+
+  注：VER 1.4.0 的文件名不符合 EA9-VER-x-x-x 命名规则，为早期遗留路径。
+      清单中无 VER 1.3.0 / 1.1.0，即官方未发布（或未保留）这两个版本。
+
+--------------------------------------------------------------------------------
+二、固件更新说明（.txt）下载地址
+--------------------------------------------------------------------------------
+VER 1.8.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-8-0.txt
+VER 1.7.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-7-0.txt
+VER 1.6.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-6-0.txt
+VER 1.5.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-5-0.txt
+VER 1.4.0  http://www.techart-logic.com/product/firmware/LM-EA9/LM-EA9VER14.txt
+VER 1.2.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-2-0.txt
+VER 1.0.0  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-0-0.txt
+
+--------------------------------------------------------------------------------
+三、链接可用性验证（HTTP HEAD，2026-08-31）
+--------------------------------------------------------------------------------
+VER 1.8.0  200 OK   20,172 字节
+VER 1.7.0  200 OK   20,172 字节
+VER 1.6.0  200 OK   20,172 字节
+VER 1.5.0  200 OK   20,508 字节
+VER 1.4.0  200 OK   20,260 字节
+VER 1.2.0  200 OK   19,940 字节
+VER 1.0.0  200 OK   19,848 字节
+
+--------------------------------------------------------------------------------
+四、原始清单记录（TECHART_LST.txt 中的 LM-EA9 全部行）
+--------------------------------------------------------------------------------
+TECHART LM-EA9;0483;575A;VER 1.8.0;Copyright TECHART Inc.;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-8-0.bin;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-8-0.txt
+TECHART LM-EA9;0483;575A;VER 1.7.0;Copyright TECHART Inc.;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-7-0.bin;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-7-0.txt
+TECHART LM-EA9;0483;575A;VER 1.6.0;Copyright TECHART Inc.;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-6-0.bin;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-6-0.txt
+TECHART LM-EA9;0483;575A;VER 1.5.0;Copyright TECHART Inc.;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-5-0.bin;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-5-0.txt
+TECHART LM-EA9;0483;575A;VER 1.4.0;Copyright TECHART Inc.;http://www.techart-logic.com/product/firmware/LM-EA9/LM-EA9VER14.bin;http://www.techart-logic.com/product/firmware/LM-EA9/LM-EA9VER14.txt
+TECHART LM-EA9;0483;575A;VER 1.2.0;Copyright TECHART Inc.;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-2-0.bin;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-2-0.txt
+TECHART LM-EA9;0483;575A;VER 1.0.0;Copyright TECHART Inc.;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-0-0.bin;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-0-0.txt
+
+================================================================================
+说明：清单文件目前共 64 条记录，涵盖 TZM-01 / TZM-02 / TZC-01 / TZE-01 / TZE-02 /
+TCX-01 / TCS-04 / TZG-01 / EF-FG01 / EF-FG01+ / LM-EA9 等型号，其中 LM-EA9 占 7 条。
+================================================================================

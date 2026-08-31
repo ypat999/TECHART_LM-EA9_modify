@@ -1,0 +1,2 @@
+LM-EA9 patch P1 (listed as VER 1.8.1)
+aperture 400->144 (F1.2 reported to body)

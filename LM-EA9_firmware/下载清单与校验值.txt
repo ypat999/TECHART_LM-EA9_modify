@@ -1,0 +1,77 @@
+================================================================================
+TECHART LM-EA9 固件下载结果
+================================================================================
+下载时间 : 2026-08-31
+清单来源 : http://www.techart-logic.com/product/TECHART_LST.txt
+解析依据 : TECHART_Updater(USB-WIN).exe（.NET 程序，硬编码上述清单地址）
+匹配标识 : 产品名 LM-EA9 / VID 0483 / PID 575A
+文件总数 : 14（固件 7 个 + 更新说明 7 个）
+目录结构 :
+  bin\           固件镜像（升级时传给适配器的 .bin）
+  releasenotes\  官方版本说明（.txt，均为 GBK/短文本）
+
+命名规则 : v<版本>_<服务器原始文件名>
+           保留原始文件名是为了能和服务器清单逐条对应；1.4.0 的原始名
+           不符合 EA9-VER-x-x-x 规则（实为 LM-EA9VER14.bin），故未做统一。
+
+--------------------------------------------------------------------------------
+bin\ 目录（固件镜像）
+--------------------------------------------------------------------------------
+v1.0.0_EA9-VER-1-0-0.bin      19,848 字节
+  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-0-0.bin
+v1.2.0_EA9-VER-1-2-0.bin      19,940 字节
+  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-2-0.bin
+v1.4.0_LM-EA9VER14.bin        20,260 字节
+  http://www.techart-logic.com/product/firmware/LM-EA9/LM-EA9VER14.bin
+v1.5.0_EA9-VER-1-5-0.bin      20,508 字节
+  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-5-0.bin
+v1.6.0_EA9-VER-1-6-0.bin      20,172 字节
+  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-6-0.bin
+v1.7.0_EA9-VER-1-7-0.bin      20,172 字节
+  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-7-0.bin
+v1.8.0_EA9-VER-1-8-0.bin      20,172 字节
+  http://www.techart-logic.com/product/firmware/LM-EA9/EA9-VER-1-8-0.bin
+
+--------------------------------------------------------------------------------
+releasenotes\ 目录（版本说明）
+--------------------------------------------------------------------------------
+v1.0.0_EA9-VER-1-0-0.txt          31 字节
+v1.2.0_EA9-VER-1-2-0.txt          20 字节
+v1.4.0_LM-EA9VER14.txt            70 字节
+v1.5.0_EA9-VER-1-5-0.txt          34 字节
+v1.6.0_EA9-VER-1-6-0.txt          14 字节
+v1.7.0_EA9-VER-1-7-0.txt          14 字节
+v1.8.0_EA9-VER-1-8-0.txt          13 字节
+
+--------------------------------------------------------------------------------
+SHA-256 校验值（格式：sha256<两空格>相对路径）
+--------------------------------------------------------------------------------
+c96537e21467010c78a8bd33e272bb3aa2be1cc7322d4a04db44521f6185d402  bin\v1.0.0_EA9-VER-1-0-0.bin
+4bd279525cca2e412513a626312d806e98edc8faaec3e2bcd056b5a350f76e48  bin\v1.2.0_EA9-VER-1-2-0.bin
+a414e9c97ea901eb3b3ec29a013fa6a2a2d44dcf6c54d73b2bc5d8e914698140  bin\v1.4.0_LM-EA9VER14.bin
+5054ddd51bcebe2a57f8e83d979d14d600bdcb8a50cac68797c6d35f252909ac  bin\v1.5.0_EA9-VER-1-5-0.bin
+961aab5d9a1fb5050fb5d1312ef00886ac198ae130863f8b4d8fc10797a5ecf0  bin\v1.6.0_EA9-VER-1-6-0.bin
+9c86cf329d08884bfa3a3b51f6c4c24d8f5694ef212d6d7aae4d245d045444ae  bin\v1.7.0_EA9-VER-1-7-0.bin
+f4d616d2ae685775efff0eedbbbaec81d5c922a2f463bb630df83c41be13f564  bin\v1.8.0_EA9-VER-1-8-0.bin
+293994f665efdb5dde2c049b961aa46884488ab04dda7417067cac1e2b299a32  releasenotes\v1.0.0_EA9-VER-1-0-0.txt
+0c67fd2287db7c395f5d107a760ccf36dd111a3ae64fa0890edb8cebe4b332c2  releasenotes\v1.2.0_EA9-VER-1-2-0.txt
+978921ed9da9ac975ff71c225fa3deb5a24241fc9ae7c3d573468daa05a0689f  releasenotes\v1.4.0_LM-EA9VER14.txt
+fb727882022ba1e1f8f902ad45c844e0c7bced46bafff4bb19d7db48a2006114  releasenotes\v1.5.0_EA9-VER-1-5-0.txt
+ff92cb09477b7fa44fbdf4a7b880ed14752223c89d9fc4c8e09aa40057ee62c9  releasenotes\v1.6.0_EA9-VER-1-6-0.txt
+ff92cb09477b7fa44fbdf4a7b880ed14752223c89d9fc4c8e09aa40057ee62c9  releasenotes\v1.7.0_EA9-VER-1-7-0.txt
+2ecb6e22b0062901fe5bcc14fd9eac4637994a410502a10e826411e3b2e34831  releasenotes\v1.8.0_EA9-VER-1-8-0.txt
+
+--------------------------------------------------------------------------------
+完整性检查
+--------------------------------------------------------------------------------
+1) 14 个请求全部返回 HTTP 200，且实际字节数与服务器 Content-Length 一致。
+2) 7 个 .bin 的开头均为小端向量表特征（首字为栈指针候选值，后接 0x0000xxxx
+   形式的代码地址），与 STM32 固件一致（VID 0483 即 STMicroelectronics），
+   可排除下载到 HTML 错误页的可能。
+3) v1.6.0 / v1.7.0 的说明文件内容相同（同一 sha256），官方未改动文案；
+   两者的 .bin 校验值不同，属不同固件。
+4) 服务器清单中不存在 LM-EA9 的 VER 1.1.0 与 1.3.0，因此本目录只有 7 个版本。
+
+使用提示：TECHART_Updater 升级时会自行联网取清单并比对设备当前版本，
+本目录中的 .bin 为等价副本，可用于离线留档或版本回退比对。
+================================================================================

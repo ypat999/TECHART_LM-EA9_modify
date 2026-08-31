@@ -1,0 +1,99 @@
+LM-EA9 本地刷写套件（flash_kit）
+================================
+仓库：https://github.com/ypat999/TECHART_LM-EA9_modify（整个工作目录已入库）
+
+【原理】
+升级程序 TECHART_Updater 先从 http://www.techart-logic.com/product/TECHART_LST.txt
+拉取固件清单，再按清单里的 URL 下载 bin，经底座 USB(HID, VID 0483 / PID 575A) 写入环。
+把该域名解析到本机、用本目录起 HTTP 服务，即可让升级程序刷入任意本地 bin。
+无签名校验、无版本回退校验（已逆向确认）。STM32 常驻 bootloader，刷坏可重刷救回。
+
+【重要：HTTP 根目录 = flash_kit 本身】
+清单 URL 里带 /product/ 前缀，所以 serve.bat 必须以 flash_kit 为根
+（flash_kit\product\... 才是 http://.../product/...）。serve.bat 已按此配置。
+
+【目录】
+product\TECHART_LST.txt            当前生效的固件清单（默认 = P1）
+product\firmware\LM-EA9\*.bin|txt  全部候选固件及说明文件
+lsts\TECHART_LST_P*.txt            每个 patch 一份清单（切换用，只含一行）
+lsts\TECHART_LST_ORIG.txt          官方 v1.8.0（回滚）
+lsts\TECHART_LST_V16.txt           官方 v1.6.0（§8.3 对比度判决实验用，本地已镜像）
+serve.bat                          启动本地 HTTP（端口 80，需 python）
+hosts_add.bat / hosts_remove.bat   添加/移除 hosts 劫持（需管理员）
+
+【patch 清单】
+P1   VER 1.8.1  EA9-P1-F12.bin      norm05 光圈 400->144（上报 F1.2）        ★首选
+P2a  VER 1.8.2  EA9-P2a-F10.bin     norm05 光圈 400->100（上报 F1.0）
+P2b  VER 1.8.3  EA9-P2b-F095.bin    norm05 光圈 400->90 （上报 F0.95）
+P3   VER 1.8.4  EA9-P3-INIT01N.bin  init01 换 native 参数组
+     ★已实测：唯一改变行为的 patch——稍近处合焦成功率略升，极限远无改善（阳性信号）
+P4   VER 1.8.5  EA9-P4-RANGE.bin    norm05 对焦量程 4864->5205 / 271->272
+P5   VER 1.8.6  EA9-P5-INIT08N.bin  init08 整帧换 native（电机标定，高危档）
+     ✖已实测：认镜头但一按对焦即通信丢失（读不到版本、不动作）⇒ 此路线永久关闭；
+     该 patch 已从建议列表移除，勿再刷。恢复：直接刷 ORIG 或任一其它 patch 即可（bootloader 常驻）。
+P6   VER 1.9.0  EA9-P6-P1PROBE.bin  = P1 + 落地探针 ★已实测：版本读回 1.9 落地成功，
+                                     但机身光圈仍 F2.0、AF 无变化 ⇒ norm05 光圈字段被排除
+P7   VER 2.0.0  EA9-P7-INIT08A.bin  = P1 + init08 光圈候选 3988->1440 + 探针
+     ✖已实测：版本读回 2.0 落地成功，光圈仍 F2.0 ⇒ 表内光圈候选全部排除，
+     机身 F 值显示源在静态表之外 ⇒ 光圈显示判据废弃，P7 停用。
+P9   VER 2.1.0  EA9-P9-P34.bin      = P3 + P4 组合（能力声明 + 量程对齐）★待测·优先
+P10  VER 2.2.0  EA9-P10-A1.bin      = init01 @1 单字节 9F->97（P3 二分①）★待测
+P11  VER 2.3.0  EA9-P11-A23.bin     = init01 @2+@3 60 7D->78 15（P3 二分②）★待测
+P12  VER 2.4.0  EA9-P12-A567.bin    = init01 @5+@6+@7 07 08 50->40 10 00（P3 二分③）★待测
+     （P9~P12 均带落地探针：版本读回 2.1~2.4，镜头名 "TECHART LM-EA9-Pn"）
+ORIG VER 1.8.0  EA9-VER-1-8-0.bin   官方 1.8.0 原固件（回滚用）
+V16  VER 1.6.0  EA9-VER-1-6-0.bin   官方 1.6.0 原固件（判决实验）
+
+【刷写步骤】
+0. 前置检查（关键）：系统若配有 HTTP 代理（公司代理 / Clash / v2rayN 等），
+   .NET HttpWebRequest 会走代理，代理会去解析真实域名 ⇒ hosts 劫持失效，
+   结果就是"你以为在刷 P1，其实官方清单被拉下来了"。
+   处理：刷写期间临时关闭系统代理（设置→网络→代理，或代理软件切"系统代理 关"），
+   并在下一步用本机解析验证。winhttp 已是 Direct access 不代表 .NET 无代理。
+1. 管理员运行 hosts_add.bat（写入 127.0.0.1 www.techart-logic.com + 刷 DNS 缓存）
+2. 关闭占用 80 端口的程序（IIS / Skype / 其他 web server）
+3. 运行 serve.bat，窗口保持开着（这里能看到每一条 GET 请求 = 唯一可信的判据）
+4. 验证劫持+路径都对（★用 curl，别用浏览器——浏览器会缓存这个 txt）：
+   curl.exe http://www.techart-logic.com/product/TECHART_LST.txt
+   ⇒ 应显示你当前的清单（默认那行 VER 1.8.1），且 serve.bat 窗口出现 GET 日志。
+   另需确认 hosts 条目真的独立成行：
+     ping -n 1 www.techart-logic.com        （必须显示 127.0.0.1）
+     type %WINDIR%\System32\drivers\etc\hosts | findstr techart
+   若解析成公网 IP ⇒ 跑 hosts_fix.bat（管理员）修复粘连，再 flushdns。
+   若 curl 显示一堆官方产品行 ⇒ 系统代理没关。
+5. 想换 patch：把 lsts\TECHART_LST_XX.txt 复制覆盖到 product\TECHART_LST.txt
+   （覆盖后重复第 4 步确认页面内容已变）
+   cmd 语法（把 P1 换成 P2a/P2b/P3/P4/P5/ORIG/V16 即可）：
+     copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_P1.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
+     type  "d:\work\techart\flash_kit\product\TECHART_LST.txt"
+   查 80 端口占用 / 起服务 / 启动升级程序（cmd）：
+     netstat -ano | findstr ":80 "
+     python -m http.server 80
+     start "" "d:\work\techart\TECHART_Updater(USB-WIN).exe"
+6. 环装到底座 → 打开 TECHART_Updater → 列表里应只有一行（你选的那个 VER）→ 升级
+   ★清单只放一行是故意的：避免在下拉里点错版本。
+7. 刷完先验证落地（清单回显的版本号不算证据）：机身镜头信息/EXIF 看镜头名是否
+   变成 patch 名（如 TECHART LM-EA9-P7），升级程序读回设备版本是否抬高；再试机测绿框
+8. 全部测完：管理员运行 hosts_remove.bat 恢复 hosts（备份在 hosts.bak）
+
+【失败与回滚】
+- 升级中途报错/断电：重跑一次即可，bootloader 常驻不会变砖。
+- 想回官方：lsts\TECHART_LST_ORIG.txt 覆盖生效清单 → 刷 VER 1.8.0。
+- 某 patch 刷进去行为更糟：直接刷 ORIG 回滚，再换下一个 patch。
+
+【验证】
+每个 bin 均为 20172 字节、全帧 checksum 已按破解规则重算（见 _extract\cksum_scan.ps1）。
+
+【建议实验顺序】（2026-08-31 全版本实测后重写）
+1) 光圈显示路线已关闭：P1/P6/P7 证明表内光圈字段（norm05=400、init08=3988）都不是
+   机身 F 值显示源；P5 证明 init08 整帧替换会炸。三者均停用，只看绿框/行为。
+2) 当前主攻 = init01 能力声明（P3 是唯一有行为变化的 patch）：
+   先刷 P9（=P3+P4，看"稍近改善+量程对齐"能否吃下极限远），
+   再刷 P10/P11/P12 对 P3 的 6 个差异字节二分，找出真正起作用的字节组。
+   每个 patch 都带探针：刷完机身镜头名应显示 "TECHART LM-EA9-Pn"、
+   升级程序读回版本 2.1~2.4，先确认落地再评行为。
+3) 报告模板（每版三数据点）：近处成功率 / 中距离成功率 / 极限远成功率，
+   以及"是否出现过绿框"。
+4) 若 P9~P12 全部到位仍无绿框 ⇒ 转路线 B：逻辑分析仪抓 pogo 针实流，
+   看机身在"半合焦"状态下到底缺哪个应答。
+5) 随时可回滚：lsts\TECHART_LST_ORIG.txt → 刷 VER 1.8.0。

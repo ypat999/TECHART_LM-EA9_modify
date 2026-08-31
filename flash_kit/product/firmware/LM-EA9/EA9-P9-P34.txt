@@ -1,0 +1,7 @@
+LM-EA9 patch P9 (listed as VER 2.1.0)
+main change: P3 + P4 combined
+  init01 body[0..7] -> native (FF 97 78 15 80 40 10 00)  [capability declaration, P3 = only patch that changed AF behavior]
+  norm05 body[0..3] 4864/4864 -> 5205/5205, body[28] 271 -> 272  [position range aligned to native]
+probe A: device self-read version 1.8 -> 2.1 (init07 BCD nibble)
+probe B: lens name -> "TECHART LM-EA9-P9" (check body lens info / EXIF)
+report: near / mid / far-infinity green-box hit rate vs P3
