@@ -33,6 +33,7 @@
 | `_extract\lex_constants.h` | **native 参照**：LexOptinal E-mount 镜头控制器模板数组（init01/07/08/09/0A/0B/0D/10、norm05/06 完整帧） |
 | `patches\EA9-P*.bin` | **28 个自制 patch 固件**（P1/P2a/P2b/P3/P4/P5/P6/P7/P9~P28，均 20172B，body 已改、cksum 已按破解规则重算、逐帧自校验 PASS；现役实验组 = P25~P28） |
 | `flash_kit\` | **本地刷写套件**：product\ 目录树 + serve.bat + hosts_add/remove.bat + lsts\ 每 patch 一份清单 + HOWTO.txt（当前生效清单 = P3，VER 1.8.4） |
+| `docs_ref\` | **外网检索固化件**（详见 §14）：LexOptical Google Doc 全文、Tapendra 论文文本提取、LexOptical 镜头侧开源源码全套、sigrok-dumps sony_emount 捕获清单 |
 
 ### 分析脚本（`_extract\`，均为 PS5 纯 ASCII）
 | 脚本 | 用途 | 已知缺陷 |
@@ -60,6 +61,7 @@
 - init0A 帧与 native（LexOptinal）**逐字节相同，连 checksum（E2 01）都相同** ⇒ 天工照抄标准模板。
 - 总线拓扑：E-mount 协议只走卡口 pogo 针（SPI，机身主机）；**底座 USB（VID 0483 / PID 575A, HID）是 PC↔环的独立刷写通道**，不承载机身总线流量；F51/F57 档位由环 MCU 本地读取、不在任何总线留痕，差异只体现在环对机身的应答内容/模板选择。
 - 光圈编码：`norm05 body[24..27]`，值 = 100×f²。TechArt=`90 01`×2（400=F2.0）；native=`96 00`×2（150≈F1.22）。F1.2 ⇒ 144=`90 00`；更激进 100=F1.0、90=F0.95。
+- **协议同一性与 init01 语义的三方独立佐证见 §14（2026-08-31 外网检索，含真镜头样本对照表）**。
 
 ## 4. v1.8.0 固件帧表（`bin\v1.8.0_EA9-VER-1-8-0.bin`，len=20172，表区 0x49D4~0x4DDx）
 
@@ -209,6 +211,7 @@ native : 55 14 55 14 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 07 80 FF
 3c. 实测进度（第三轮：P13~P16 单字节二分）：P16 ★ 优于 P3 ⇒ 去毒正确；**P15 ★★ 优于 P16 ⇒ @7（50→00）就是关键字节，P15 成为新冠军/新基准**；P13 略差于 P16 但**最边缘处更稳** ⇒ @5 是唯一的边缘正信号；P14 明显劣于 P16 但优于原装 ⇒ @6 弱正且冗余；叠加多于必要字节反而稀释（P15 > P16 > P13/P14）。当前代 = **P17（@5+@7，优先）/ P18（@6+@7）/ P19（@1+@7）/ P20（@7=28 中间值·值语义探针）**，探针版本读回 2.9~3.2，生成自检 ALL=PASS（diff 10~11B）。
 3d. 实测进度（第四轮：P17~P20 二阶搜索）：**P19(@1+@7) ★★ 成功率≈P17 但合焦更快、总体最好 ⇒ @1 与 @7 存在协同**；P17(@5+@7) ★ 好于 P15 且极限边缘有概率对上；P18(@6+@7) 无增益；P20(@7=28) 劣于 P15 ⇒ **@7 为连续标定值、越低越好，00 是表内端点**。至此 init01 八字节全部定性：@7=00 关键、@5=40 边缘、@1=97 提速协同、@2@3 有毒、@6 稀释、@0/@4 同值。当前代 = **P21（@1+@5+@7 合并双冠军·优先）/ P22（@7=FF 越端探针）/ P23（@5=80 上限探针）/ P24（@1=17 甜点位探针）**，探针版本读回 3.3~3.6，生成自检 ALL=PASS（diff 11~12B）。
 3e. 实测进度（第五轮：P21~P24 组合与越端）：P21(@1+@5+@7) 不如 P19 且**偶发走太远脱框** ⇒ @1 与 @5(40档) 相冲、"合并双冠军"证伪；P22(@7=FF) 与 P19 体感类似 ⇒ **@7 的 FF 与 00 等效**（回绕相邻低端皆可，28 才是不稳中间态）；**P23(@5=80+@7=00) ★★★ 又准又快 ⇒ 新冠军**，@5 越高越好且未到头；P24(@1=17) 快但合焦不稳 ⇒ @1=97 甜点位定案。当前代 = **P25（@5=A0）/ P26（@5=C0）一轮夹逼 @5 最优档 + P27（@1+@5=80，高 @5 下 @1 复判）+ P28（@5=80 单独，@7 必要性对照）**，探针版本读回 3.7~4.0，生成自检 ALL=PASS（diff 10~12B）。
+3f. **外网检索定案（§14）：init01 body 公开无文档 ⇒ P 系列实验知识即前沿**。@5 夹逼收敛后若仍不满意，静态表新渠道队列（均有 ≥2 真实样本背书、TechArt 为少数派）：**init08 标志位候选字节 [13]/[17]（native=Sigma 同值 E1/15，TechArt 独异 20/40）⇒ init07 四点差异（@0/@1/@2/@8-9）⇒ norm05 距离表段照抄 native ⇒ norm06 焦点位置字段（byte2/3，勿碰已证伪的 @9）**。
 4. 若 @5 夹逼收敛（80/A0/C0 定案）后综合表现仍不满意 ⇒ 静态表挖掘收官（以当时最优 patch 作日常固件），要达到"极限边缘稳定合焦"须进运行时层（§7E）实锤观测：
    - 路线 A：底座 USBPcap 抓 TECHART 升级程序流量 → 反推 HID 封装 → Python hidapi 伪机身审讯环（查 F51/F57 双档模板应答 diff）；
    - 路线 B：魔改手动 E-E 接圈，pogo 针焊漆包线 + 逻辑分析仪抓 SPI（机身侧真流量，含 0x0104 AF 驱动命令与环的实时应答）。
@@ -226,3 +229,42 @@ native : 55 14 55 14 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 07 80 FF
 ## 13. 用户历史请求（背景，全部已答复）
 
 1. 解包升级 exe、提取全部固件 URL → 完成。2. 建目录全下载 → 完成。3. 评判小红书原帖猜测方向 + 检索开源项目 → 完成（原帖疑"速度/算法"，本档转向"确认信息面"）。4. 评判横向色散/竖线 PDAF 假说与"只在 F57 改 F1.2"的可行性 → 完成（档位为环本地开关，需先问 F57 到底改了什么）。5. 查明清库如何离线刷改后固件 → 完成（§9）。6. 全局 F1.2 之外的候选修改点 → 完成（四梯队清单→本文档 §7 收敛版）。7. 五版本实测无差异的解读 → 完成（§6）。8. 专用底座下的抓包方案 → 完成（路线 A/B/C）。9. F1.2 之外影响合焦判定的字段 → 完成（§7 分层清单 + §10 矩阵）。10. v1.8 是否开启对比度确认 → 完成（§8：固件层无此开关，看 init01 声明；实验推论）。11. **破解 checksum（用户睡眠期间自主推进）→ 完成**：算法=Σ字节和（§3），native 8/8+TechArt 11/16 双向验证；顺带产出"官方改 body 不重算 cksum⇒机身不校验"法证与 init01 尾部勘误（§7C）；P 系列 6 固件 + flash_kit 刷写套件全部生成并自校验通过（§10）。
+
+## 14. 外网公开文档检索结论（2026-08-31，本机 10809 代理完成）
+
+### 14.1 协议同一性与 init01 定位（证实）
+
+- 三个**互相独立**的来源与 §3 帧结构逐字段吻合（0xF0 头/LE16 长度/class/seq/type/body/LE16 和校验/0x55 尾，UART 8N1、750kbps 协商后升 1.5Mbps）：① dyxum 论坛 Entropy512 长帖；② LexOptical Google Doc《Sony E Mount Lens Protocol》（`docs_ref\lexoptical_google_doc.txt`）；③ Tapendra 2025 论文附录（`docs_ref\emount_paper_tapendra_text.txt`）。⇒ LM-EA9 消息表就是 E-mount 机身↔镜头协议模板。
+- **init01 = type 0x01，公开命名 "Capabilities?"**（init 阶段镜头向机身申报能力/标定，SEQ=0）。
+- **公开边界**：论文原话 "initialization messages…their body is not of interest"——**init01 body 八字节的逐位含义在全网公开资料中不存在**。我们五轮 P 实验的 @1~@7 定性即检索可见范围内最前沿。官方规范锁在 Sony NDA 内。
+
+### 14.2 init01 body 三样本对照表（本段新立）
+
+| 样本 | @0 | @1 | @2 | @3 | @4 | @5 | @6 | @7 |
+|---|---|---|---|---|---|---|---|---|
+| TechArt 原厂（@0x4A0C） | FF | 9F | 60 | 7D | 80 | **07** | 08 | 50 |
+| native（LexOptical 固件模板） | FF | 97 | 78 | 15 | 80 | 40 | 10 | 00 |
+| **Sigma 15/1.4 真镜头（A7R III 实机捕获）** | FF | 9F | 78 | 5D | 82 | 60 | 18 | 7E |
+
+- @0 恒 FF；**@1 Sigma=TechArt=9F**（9F 非乱值，P24 判 17 差的甜点旁证）；**@5 我们已推到 80/A0，超过一切真样本（≤60）** ⇒ P25/P26 若现天花板，@5 疑为编码值而非线性增益；@7 三样本 00/50/7E 无单调 ⇒ 八字节更像按型号打包的标定档案。
+- 论文附录含 0x01 双向完整帧（机身请求 body=`FF×9 2F F8 00×19`，Sigma 应答即上表第三行），在 `docs_ref\emount_paper_tapendra_text.txt` 尾部 Table（p.24 附近）。
+
+### 14.3 "PDAF 对比度终检位"：公开资料无此文档化开关
+
+- 已对全部到手资料（Google Doc、论文、开源源码、论坛帖）穷举 contrast/confirm/flag 检索：**唯一成表的名义标志位 = 0x06 消息 byte0 "Limit Flags"**（bit4=Focus Max、bit3=Focus Min），与终检无关。
+- LexOptical 镜头侧 Arduino 实现（模板回显即可骗过 NEX7，源码在 `docs_ref\lexoptical_emount_src\`）无任何"终检模式"分支；A7R3 菜单亦无对应开关。⇒ 传闻（含 §13-10 用户旧问）无公开出处；实质可用的操纵面 = **0x08 能力表（201B）的声明内容**。
+
+### 14.4 init01 之外的渠道（三样本首diff，按嫌疑排序）
+
+| 渠道 | 帧/偏移 | TechArt | native | Sigma（论文捕获） | 备注 |
+|---|---|---|---|---|---|
+| **A. init08 能力大表** | 02/08 @0x4A88（201B） | [0..3]=`00 13 00 19` [7]=16 [13]=20 [17]=40 [20]=28 | `55 14 55 14` [5]=40 [9]=01 **[13]=E1 [17]=15** [20]=00 | `00 11 00 18` [7]=80 [9]=14 **[13]=E1 [17]=15** [20]=14 | [0..3] LE=对焦行程步数（4864/6400、5205、4352/6144）；**[13]/[17] 两真样本一致而 TechArt 独异 ⇒ 头号标志位候选**。P5 只否决过"整表替换"，单字节未试 |
+| B. init07 | 02/07 @0x4A38（34B） | `02 03 08 01 00 00 18 10 A0 EA` | `01 01 60 01 00 01 01 00 A0 30` | — | @0/@1/@2/@8-9 四处全不同，疑驱动类型/行程声明；小表低风险 |
+| C. norm06 焦点位置 | 01/06 @0x49D4 | 静态模板 | — | 真镜头实时变化 | **dpreview 第4页实锤：初代 Techart 把焦点位置硬编码 0x0162 报机身** ⇒ 机身消费 byte2/3 位置字段；@9 的版本变异（16/60）已被版本考古证伪勿再碰 |
+| D. norm05 距离表段 | 01/05 @0x4B7C body[32+] | 全零 | `B1 28 47 51 4B 38 27 08 35 30 40 39` | — | 疑距离编码表（§5 旧记录），照抄 native 零风险 |
+- 排除项：Neto-Zeme/emount 仓库为低价值推测笔记（物理层误写为 SPI）；**LensCAP 在 GitHub/GitLab 各拼写变体均零命中，弃线**；sigrok.org 反 AI 爬虫（其内容经 Entropy512/sigrok-dumps GitHub 镜像取得，捕获清单已固化 `docs_ref\sigrok_dumps_sony_emount_readme.txt`）；grep.app JSON API 已失效。
+
+### 14.5 来源与抓取技法
+
+- 来源：[Tapendra 论文 PDF](https://github.com/Tapendra-195/Sigma_Lens_Control/blob/master/docs/E_Mount_Protocol.pdf)（7.5MB 未入库，文本提取已固化）· [LexOptical Google Doc](https://docs.google.com/document/d/1iw54nzrF0bzQgLINpcP9F8Odd0N5cd7LjlwCDPTNZK0/edit) · [dyxum topic119522](http://www.dyxum.com/dforum/emount-electronic-protocol-reverse-engineering_topic119522) · [dpreview 帖第4页](https://www.dpreview.com/forums/threads/e-mount-reverse-engineering.3872069/page-4) · [LexOptical/E-Mount 源码](https://github.com/LexOptical/E-Mount) · [LexOptical/E-Mount-Traffic-Samples](https://github.com/LexOptical/E-Mount-Traffic-Samples) · [Entropy512/sigrok-dumps](https://github.com/Entropy512/sigrok-dumps)。
+- 技法：**Google Docs 抓取必须 `curl.exe -x http://127.0.0.1:10809 ".../export?format=txt"`**（WebFetch 必失败）；PDF 文本用 python 3.12 + pypdf（pip 亦走代理）；GitHub 检索用 `api.github.com/search/repositories`（免认证可用）逐个翻 contents，优于已失效的 grep.app；GitLab raw 会被 Cloudflare 挑战页拦截。原始工作文件在 `D:\tmp_web\`（仓外，换机即失，故关键文本已固化入 `docs_ref\`）。

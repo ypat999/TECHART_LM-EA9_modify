@@ -1,0 +1,576 @@
+﻿Sony E Mount Lens Protocol
+Disclaimer
+This is a product of reverse engineering. No warranties express or implied.
+Contributors
+@bostwickenator
+@entropy512
+Index
+Disclaimer        1
+Contributors        1
+Index        1
+Physical & Electrical Specifications        3
+Pin Definitions        3
+Signaling        4
+Serial Message Format        4
+Framing        4
+Message Types        5
+Initialization Messages        6
+Initialization Sequences        7
+Voigtlander 15mm Manual Focus        7
+Main Message Loop        8
+Voigtlander 15mm Manual Focus        8
+Shutdown        9
+Voigtlander 15mm Manual Focus        9
+Message Definitions        10
+0x05        10
+0x06        10
+Limit flags        11
+
+
+________________
+Physical & Electrical Specifications
+Dimension
+	Value
+	Flange Focal Distance 
+	18mm
+	
+
+	
+
+	Pin Definitions
+ Pins are labeled from 1 to 10 left to right while looking at the back of the lens 
+
+
+
+
+
+Pin #
+	Function
+	Description
+	1
+	LENS_GND 
+	Lens motor GND
+	2
+	LENS_POWER 
+	Can be either 5.0V or unregulated Vbat (7.4V nominal) - This is somehow negotiated between body and lens.
+	3
+	LOGIC_GND 
+	Ground for lens logic circuitry
+	4
+	BODY_VD_LENS 
+	Body to lens signaling that kicks off each command/response loop. In nearly all cases, it is normally high but pulses low at a very low duty cycle, 60 Hz. It is reported in some regions this may also run at 50Hz.
+	5
+	LOGIC_VCC 
+	Lens logic power 3.15V. All data lines are 3.15V logic high.
+	6
+	LENS_CS_BODY 
+	Handshaking line from lens to body. Always high when RXD is transferring data, normally low.
+	7
+	RXD 
+	Serial data from lens to body
+	8
+	TXD 
+	Serial data from body to lens
+	9
+	BODY_CS_LENS 
+	Handshaking line from body to lens. Always high when TXD is transferring data.
+	10
+	LENS_XDETECT 
+	weakly pulled high by the body. Grounded to LOGIC_GND by the lens, or sometimes via 680 Ohm resistor (Viltrox EF-NEX II). Used to detect presence of a lens. Body will not output power unless this pin is grounded.
+	Signaling 
+UART 8N1, LSB-first.
+
+
+Communication starts at 750 kbaud. The camera and lens usually negotiate a speed change to 1.5 Mbaud during init.
+
+
+Serial Message Format
+Framing
+Byte#
+	Name
+	Value
+	Description
+	0
+	SOM
+	0xF0
+	Start of message. Presumably this value is used as this results in the bit pattern b11110000 which can be used to detect baud rate accurately. 
+	1,2
+	MESSAGE_LENGTH
+	
+
+	16-bit length of message
+	3
+	MESSAGE_CLASS
+	
+
+	Normal 0x01
+Initialization or shutdown 0x02
+?? 0x03
+
+
+	4
+	SEQ_NUMBER
+	
+
+	0 during initialization, and then begins counting BODY_VD_LENS cycles during normal operation. The sequence count appears to reset after 0xEF. It appears that the body can command a change in sequence numbers by altering this value - the lens will always report the last seen sequence number plus 1. That is to say the sequence number does not go up with each message but with each message pair.
+	5
+	MESSAGE_TYPE
+	
+
+	A value from Message Types below
+	--
+	--
+	--
+	--
+	N - 2
+	CHECKSUM
+	
+
+	16-bit checksum, the sum of all bytes in the message payload byte [1,N-3] 
+	N - 1
+	' '
+	
+
+	Continuation of CHECKSUM
+	N
+	EOM
+	0x55
+	End of message
+	>N
+	GARBAGE
+	
+
+	Any bytes after EOM are ignored
+	
+
+Message Types
+MESSAGE_ID
+	Name
+	Body To Lens
+	Lens To Body
+	
+
+	
+
+	
+
+	
+
+	0x03
+	Aperture 
+	Yes
+	
+
+	0x04
+	Unknown
+	Yes
+	
+
+	0x05
+	Aperture Status
+	
+
+	Yes
+	0x06
+	Focus Position Status
+	
+
+	Yes
+	0x1C 
+	Stop AF
+	Yes
+	ACK?
+	0x1D
+	Absolute or relative motor movement 
+	Yes
+	ACK
+	0x1F
+	AF Hunt
+	Yes
+	ACK
+	0x22
+
+
+	Absolute motor movement
+	Yes
+	
+
+	0x2F
+	Echo request
+	Yes
+	
+
+	0x3C
+	Move at speed
+	
+
+	ACK?
+	
+
+
+
+Initialization Messages
+MESSAGE_ID
+	Name
+	Body To Lens
+	Lens To Body
+	0x01
+	Capabilities?
+	0x29 
+	0x29
+	0x07
+	
+
+	0x0A
+	0x2B
+	0x08
+	
+
+	
+
+	0x11
+	0x09
+	
+
+	0x0D
+	0x14
+	0x10
+	Seen on EF-E adapter
+	0x0A
+	0x0A
+	0x16
+	Part of a reset sequence?
+	0x0A
+	0X0A
+	
+
+	
+
+	
+
+	
+
+	0x0A
+	
+
+	0x19
+	
+
+	0x0B
+	
+
+	0x0B
+	0x0B
+	0x0C
+	SEL70200|SEL2875, appears to signal speed change
+	0x0A
+	0x0A
+	0x0D
+	Seen on EF-E adapter
+	0x0A
+	0x0A
+	0x19
+	SEL2875
+	0x0A
+	0x0A
+	0x28
+	SEL2875
+	0x0A
+	0x2C
+	0x2B
+	Seen on EF-E adapter on lens AF switch change
+	0x0A
+	0x0A
+	
+
+________________
+
+
+Message Definitions
+
+
+0x03
+length: 0x20
+
+
+Byte#
+	Name
+	Value
+	Description
+	12
+	Liveness?
+	0x00
+0x01
+	Always seems to oscillate between 0 and 1
+	21
+	Target 1?
+	0x15
+0x17
+	Camera outputs a pattern here oscillate +/-1 constantly
+after first len packet camera sends 0x01  
+	22
+	Target 2?
+	0x15
+0x17
+	after first len packet camera sends 0x55  
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+0x05
+length: 0x90
+
+
+Byte#
+	Name
+	Value
+	Description
+	20-21
+	Focus ?
+	
+
+	272 -1792 bigger further
+ big steps
+	23
+	Focus Pos
+	
+
+	147-255 (not 0 at lens minimum)
+	30-31
+	Aperture
+	0x00
+0x4AB
+	00 = brightest
+0x4AB = darkest 
+	33-39
+	Aperture ??
+	
+
+	vary with aperture movement unknown how
+	60
+	Focus moving flag
+	
+
+	coupled to 0x06 byte 2
+0x00 not in motion
+0x255 focusing further
+0x01 focusing closer??? 
+	77
+	Target 1
+	
+
+	Follows 0x03 byte 21
+	78
+	Target 2
+	
+
+	Follows 0x03 byte 22
+	81
+	??
+	
+
+	163 - 154
+Inversely proportional to focus distance
+	84
+	
+
+	
+
+	
+
+	
+
+0x06
+length: 0x30
+
+
+Byte#
+	Name
+	Value
+	Description
+	0
+	Limit Flags
+	0x08
+0x10
+	Is the lens at a focus limit? Maybe other flags included.
+
+
+	1
+	?
+	0x00
+	static?
+	2
+	Focus Position
+	0x00
+0x3F
+	Focus position 0x00 is max focus distance. Value increases as focus position moves closer.
+	3
+	?
+	0x10
+	static?
+	4
+	?
+	0x00
+	static?
+	5
+	?
+	0x00
+	static?
+	6
+	?
+	0x00
+	static?
+	7
+	?
+	0x00
+	static?
+	8
+	
+
+	0x10
+	
+
+	
+
+	
+
+	0x3F
+	
+
+	
+
+	
+
+	0x10
+	
+
+	
+
+	
+
+	0x00
+	
+
+	>
+	
+
+	0x00
+	unknown to message length
+	
+
+Limit flags
+128
+	64
+	32
+	16
+	8
+	4
+	2
+	1
+	?
+	?
+	?
+	Focus Max
+	Focus Min
+	?
+	?
+	?
+	0x0C
+length: 0x0A
+
+
+Byte#
+	Name
+	Value
+	Description
+	
+
+	
+
+	
+
+	
+
+	0
+	Speed
+	0x02
+0x01
+	In order to jump to 1.5MBaud the camera sends 0x02, the lens responds with 0x01 (to signal it's complying??)
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+Initialization Sequences
+
+
+Partial and complete initialization. It appears that the camera has some way of determining if a complete initialization is needed. If so it start with an init 0x01 message otherwise it may start with 0x0B.
+Voigtlander 15mm Manual Focus
+This lens does not negotiate a higher baud rate, all communication is at 750kBaud. This could be considered a minimal valid sequence. Test camera is a NEX7
+
+
+  
+
+Body->Lens: 0x0B
+Lens->Body: 0x0B
+Body->Lens: 0x09
+Lens->Body: 0x09
+Body->Lens: 0x0D
+Lens->Body: 0x0D
+Body->Lens: 0x10
+Lens->Body: 0x10
+Body->Lens: 0x0A
+Lens->Body: 0x0A
+
+
+
+
+________________
+Main Message Loop
+Two message slots in each direction run at 60Hz
+
+
+Voigtlander 15mm Manual Focus  
+Lens->Body: 0x05
+Lens->Body: 0x06
+Body->Lens: 0x03
+Body->Lens: 0x04
+Lens->Body: 0x05
+Lens->Body: 0x06
+Body->Lens: 0x03
+Body->Lens: 0x04
+
+
+
+
+________________
+Shutdown
+These sequences happen when the camera is powering off.
+
+
+Voigtlander 15mm Manual Focus
+Body->Lens: 0x0A  
+Lens->Body: 0x0A
+Body->Lens: 0x16
+Lens->Body: 0x16
