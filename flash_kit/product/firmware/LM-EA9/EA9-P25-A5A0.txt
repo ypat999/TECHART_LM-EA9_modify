@@ -1,0 +1,5 @@
+LM-EA9 patch P25 (listed as VER 3.7.0)
+main change: init01 body[5]+body[7]: 07 50 -> A0 00  [climb @5 step 1 from champion P23 (80)]
+probe A: device self-read version 1.8 -> 3.7 (init07 BCD nibble)
+probe B: lens name -> "TECHART LM-EA9-P25" (check body lens info / EXIF)
+report: near(1~1.5m) accuracy + speed + edge vs P23 (still climbing or overshooting?)

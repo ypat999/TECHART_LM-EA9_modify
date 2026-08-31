@@ -1,0 +1,5 @@
+LM-EA9 patch P27 (listed as VER 3.9.0)
+main change: init01 body[1]+body[5]+body[7]: 9F 07 50 -> 97 80 00  [@1 on top of champion P23; watch for overshoot like P21]
+probe A: device self-read version 1.8 -> 3.9 (init07 BCD nibble)
+probe B: lens name -> "TECHART LM-EA9-P27" (check body lens info / EXIF)
+report: near(1~1.5m) vs P23, ESPECIALLY any 走太远/脱框 (overshoot) events

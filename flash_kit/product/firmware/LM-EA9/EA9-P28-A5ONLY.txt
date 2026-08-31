@@ -1,0 +1,5 @@
+LM-EA9 patch P28 (listed as VER 4.0.0)
+main change: init01 body[5] only: 07 -> 80, @7 stays 50  [control: is @7=00 still needed once @5=80?]
+probe A: device self-read version 1.8 -> 4.0 (init07 BCD nibble)
+probe B: lens name -> "TECHART LM-EA9-P28" (check body lens info / EXIF)
+report: near(1~1.5m) vs P23; if ~= P23 then @5 dominates and @7 is optional at high @5

@@ -330,6 +330,41 @@ $a[$BODY_I01 + 5] = $lex01[11]; $a[$BODY_I01 + 7] = $lex01[13]
 Set-Probes $a 0x36 "P24"
 Save-Patch $a (Join-Path $OutDir "EA9-P24-A1DN.bin")
 
+# ---------- P25..P28: chase the @5 ceiling (NEW CHAMPION = P23) ----------
+# Bench data (1~1.5m): P21(@1+@5=40+@7) < P19 + overshoots past the box => @1 and @5=40
+#   mutually harmful together; P22(@7=FF) ~ P19 => FF equivalent to 00 (wraparound-adjacent,
+#   both are the safe low end); P23(@5=80+@7=00) ACCURATE AND FAST => new champion, pushing
+#   @5 past native 40 wins and @1 is not needed; P24(@1=17) fast but unstable lock => 97 sweet spot confirmed.
+# P25 = @5=A0 + @7=00  (keep climbing @5, step 1)
+# P26 = @5=C0 + @7=00  (step 2; P25/P26 together bracket the @5 optimum in one round)
+# P27 = @1 + @5=80 + @7=00  (does @1 help again once @5 is high? watch for overshoot)
+# P28 = @5=80 alone, @7 stays 50  (control: is @7=00 still needed at high @5?)
+# Probes: init07 BCD 0x37/0x38/0x39/0x40 (readback 3.7/3.8/3.9/4.0), init3F name -> -Pn
+$a = $orig.Clone()
+$a[$BODY_I01 + 5] = 0xA0; $a[$BODY_I01 + 7] = $lex01[13]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x37 "P25"
+Save-Patch $a (Join-Path $OutDir "EA9-P25-A5A0.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 5] = 0xC0; $a[$BODY_I01 + 7] = $lex01[13]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x38 "P26"
+Save-Patch $a (Join-Path $OutDir "EA9-P26-A5C0.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 1] = $lex01[7]
+$a[$BODY_I01 + 5] = 0x80; $a[$BODY_I01 + 7] = $lex01[13]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x39 "P27"
+Save-Patch $a (Join-Path $OutDir "EA9-P27-A157UP.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 5] = 0x80
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x40 "P28"
+Save-Patch $a (Join-Path $OutDir "EA9-P28-A5ONLY.bin")
+
 # ---------- self-verify: a patch may only break cksums that orig already had broken ----------
 Write-Output "--- verify ---"
 $FRAMES = @(,@($N05_OFF,$N05_LEN)) + @(,@($I01_OFF,$I01_LEN)) + @(,@($I08_OFF,$I08_LEN)) + @(,@($I07_OFF,$I07_LEN)) + @(,@($I3F_OFF,$I3F_LEN)) + @(,@($I34_OFF,$I34_LEN))
