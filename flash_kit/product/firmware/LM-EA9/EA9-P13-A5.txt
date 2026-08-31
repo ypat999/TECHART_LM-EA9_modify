@@ -1,0 +1,5 @@
+LM-EA9 patch P13 (listed as VER 2.5.0)
+main change: init01 body[5] only: 07 -> 40  [single-byte bisect of P12 active group]
+probe A: device self-read version 1.8 -> 2.5 (init07 BCD nibble)
+probe B: lens name -> "TECHART LM-EA9-P13" (check body lens info / EXIF)
+report: near(1~1.5m) green-box hit rate vs P3 / P12; edge/infinity unchanged expected

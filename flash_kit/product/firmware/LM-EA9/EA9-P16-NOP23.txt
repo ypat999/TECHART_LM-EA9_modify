@@ -1,0 +1,5 @@
+LM-EA9 patch P16 (listed as VER 2.8.0)
+main change: init01 body[1,5,6,7]: 9F 07 08 50 -> 97 40 10 00  [P3 minus poison: drop harmful @2@3 (P11 was worst)]
+probe A: device self-read version 1.8 -> 2.8 (init07 BCD nibble)
+probe B: lens name -> "TECHART LM-EA9-P16" (check body lens info / EXIF)
+report: near(1~1.5m) hit rate vs P3/P12; candidate for new best baseline

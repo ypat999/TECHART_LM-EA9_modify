@@ -229,6 +229,36 @@ $a[$BODY_I01 + 5] = $lex01[11]; $a[$BODY_I01 + 6] = $lex01[12]; $a[$BODY_I01 + 7
 Set-Probes $a 0x24 "P12"
 Save-Patch $a (Join-Path $OutDir "EA9-P12-A567.bin")
 
+# ---------- P13..P16: single-byte bisect inside the P12 active group ----------
+# Bench data (1~1.5m): P9 ~= orig (worse than P3), P10 ~= orig, P11 WORST, P12 ~= P3.
+# => @5@6@7 is the active group; @2@3 actively harmful; @1 inert alone; P4 add-on harmful.
+# P13 = @5 only (07->40) ; P14 = @6 only (08->10) ; P15 = @7 only (50->00)
+# P16 = @1+@5+@6+@7  ("P3 minus poison": drop harmful @2@3, keep everything else)
+$a = $orig.Clone()
+$a[$BODY_I01 + 5] = $lex01[11]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x25 "P13"
+Save-Patch $a (Join-Path $OutDir "EA9-P13-A5.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 6] = $lex01[12]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x26 "P14"
+Save-Patch $a (Join-Path $OutDir "EA9-P14-A6.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 7] = $lex01[13]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x27 "P15"
+Save-Patch $a (Join-Path $OutDir "EA9-P15-A7.bin")
+
+$a = $orig.Clone()
+$a[$BODY_I01 + 1] = $lex01[7]
+$a[$BODY_I01 + 5] = $lex01[11]; $a[$BODY_I01 + 6] = $lex01[12]; $a[$BODY_I01 + 7] = $lex01[13]
+[void](Write-FrameCk $a $I01_OFF $I01_LEN)
+Set-Probes $a 0x28 "P16"
+Save-Patch $a (Join-Path $OutDir "EA9-P16-NOP23.bin")
+
 # ---------- self-verify: a patch may only break cksums that orig already had broken ----------
 Write-Output "--- verify ---"
 $FRAMES = @(,@($N05_OFF,$N05_LEN)) + @(,@($I01_OFF,$I01_LEN)) + @(,@($I08_OFF,$I08_LEN)) + @(,@($I07_OFF,$I07_LEN)) + @(,@($I3F_OFF,$I3F_LEN)) + @(,@($I34_OFF,$I34_LEN))
