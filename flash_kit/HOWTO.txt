@@ -13,7 +13,7 @@ LM-EA9 本地刷写套件（flash_kit）
 （flash_kit\product\... 才是 http://.../product/...）。serve.bat 已按此配置。
 
 【目录】
-product\TECHART_LST.txt            当前生效的固件清单（当前 = P3, VER 1.8.4）
+product\TECHART_LST.txt            当前生效的固件清单（当前 = P23, VER 3.5.0）
 product\firmware\LM-EA9\*.bin|txt  全部候选固件及说明文件
 lsts\TECHART_LST_P*.txt            每个 patch 一份清单（切换用，只含一行）
 lsts\TECHART_LST_ORIG.txt          官方 v1.8.0（回滚）
@@ -88,7 +88,7 @@ V16  VER 1.6.0  EA9-VER-1-6-0.bin   官方 1.6.0 原固件（判决实验）
 3. 运行 serve.bat，窗口保持开着（这里能看到每一条 GET 请求 = 唯一可信的判据）
 4. 验证劫持+路径都对（★用 curl，别用浏览器——浏览器会缓存这个 txt）：
    curl.exe http://www.techart-logic.com/product/TECHART_LST.txt
-   ⇒ 应显示你当前的清单（默认那行 VER 1.8.1），且 serve.bat 窗口出现 GET 日志。
+   ⇒ 应显示你当前的清单（当前默认那行 VER 3.5.0 = P23），且 serve.bat 窗口出现 GET 日志。
    另需确认 hosts 条目真的独立成行：
      ping -n 1 www.techart-logic.com        （必须显示 127.0.0.1）
      type %WINDIR%\System32\drivers\etc\hosts | findstr techart
