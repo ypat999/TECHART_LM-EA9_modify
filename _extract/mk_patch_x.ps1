@@ -74,6 +74,15 @@ $pats += @{ tag="X10"; bcd=0x62; ver="6.2.0"; frames=@($I01,$I07,$I3F); edits=@(
     @{ off=($I01B+6); v=@(0x10) }) }                                 # P23 + @6=10 (native; weak-pos on 35mm, untested axis on M40)
 $pats += @{ tag="X11"; bcd=0x63; ver="6.3.0"; frames=@($I08,$I07,$I3F); edits=@(
     @{ off=($I08B+17); v=@(0x15) }) }                                # P23 + init08[17]=15 ONLY (X4 killed [13]=E1; isolate [17])
+# --- 3rd batch after X9~X11 verdicts: @6=10 becomes M40 base (only positive so far), reopen @5 ladder on top ---
+$pats += @{ tag="X12"; bcd=0x64; ver="6.4.0"; frames=@($I01,$I07,$I3F); edits=@(
+    @{ off=($I01B+5); v=@(0xA0,0x10,0x00) }) }                       # @5=A0 + @6=10 (@7=00 kept)
+$pats += @{ tag="X13"; bcd=0x65; ver="6.5.0"; frames=@($I01,$I07,$I3F); edits=@(
+    @{ off=($I01B+5); v=@(0xC0,0x10,0x00) }) }                       # @5=C0 + @6=10
+$pats += @{ tag="X14"; bcd=0x66; ver="6.6.0"; frames=@($I01,$I07,$I3F); edits=@(
+    @{ off=($I01B+5); v=@(0x40,0x10,0x00) }) }                       # @5=40 + @6=10 (low anchor)
+$pats += @{ tag="X15"; bcd=0x67; ver="6.7.0"; frames=@($I01,$I07,$I3F); edits=@(
+    @{ off=($I01B+6); v=@(0x18) }) }                                 # @6=18 (Sigma value) alone
 
 $outDir = "d:\work\techart\patches"
 $kitFw = "d:\work\techart\flash_kit\product\firmware\LM-EA9"
