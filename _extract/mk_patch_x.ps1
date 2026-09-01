@@ -44,8 +44,10 @@ Assert-Bytes $base ($I08B + 13) @(0x20,0x01,0x00,0x00,0x40)
 # name template: "TECHART LM-EA9-Xn" at init3F body[1..17], then zero
 function Get-NameBytes([string]$tag) {
     $s = "TECHART LM-EA9-" + $tag
-    $bs = [System.Text.Encoding]::ASCII.GetBytes($s)
-    if ($bs.Length -gt 18) { throw ("name too long: " + $s) }
+    $raw = [System.Text.Encoding]::ASCII.GetBytes($s)
+    if ($raw.Length -gt 18) { throw ("name too long: " + $s) }
+    $bs = @(0) * 18
+    for ($i = 0; $i -lt $raw.Length; $i++) { $bs[$i] = $raw[$i] }
     return ,$bs
 }
 
