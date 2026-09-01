@@ -27,7 +27,12 @@ $jobs = @(
  @{ tag="Z0"; bcd=0x81; ver="8.1.0"; dist=$true;  i07edit=@(); i01=@(0x10) },   # Y1 + @6=10 stacked
  @{ tag="Z1"; bcd=0x82; ver="8.2.0"; dist=$false; i07edit=@(@{o=2; v=@(0x60)}); i01=@() },
  @{ tag="Z2"; bcd=0x83; ver="8.3.0"; dist=$false; i07edit=@(@{o=9; v=@(0x30,0xC7)}); i01=@() },
- @{ tag="Z3"; bcd=0x84; ver="8.4.0"; dist=$false; i07edit=@(@{o=0; v=@(0x01,0x01)}, @{o=5; v=@(0x01)}, @{o=7; v=@(0x00)}); i01=@() }
+ @{ tag="Z3"; bcd=0x84; ver="8.4.0"; dist=$false; i07edit=@(@{o=0; v=@(0x01,0x01)}, @{o=5; v=@(0x01)}, @{o=7; v=@(0x00)}); i01=@() },
+ # --- single-byte decomposition of the Z3 group (find frame-size vs verify-trigger) ---
+ @{ tag="Z4"; bcd=0x85; ver="8.5.0"; dist=$false; i07edit=@(@{o=0; v=@(0x01)}); i01=@() },   # @0 alone
+ @{ tag="Z5"; bcd=0x86; ver="8.6.0"; dist=$false; i07edit=@(@{o=1; v=@(0x01)}); i01=@() },   # @1 alone
+ @{ tag="Z6"; bcd=0x87; ver="8.7.0"; dist=$false; i07edit=@(@{o=5; v=@(0x01)}); i01=@() },   # @5 alone
+ @{ tag="Z7"; bcd=0x88; ver="8.8.0"; dist=$false; i07edit=@(@{o=7; v=@(0x00)}); i01=@() }    # @7 alone
 )
 
 foreach ($j in $jobs) {
