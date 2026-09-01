@@ -1,0 +1,1 @@
+LM-EA9 patch X5 (VER 5.5.0) base=P23, target lens = Leica-M 40mm round
