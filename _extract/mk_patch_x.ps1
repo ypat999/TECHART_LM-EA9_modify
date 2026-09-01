@@ -45,7 +45,7 @@ Assert-Bytes $base ($I08B + 13) @(0x20,0x01,0x00,0x00,0x40)
 function Get-NameBytes([string]$tag) {
     $s = "TECHART LM-EA9-" + $tag
     $bs = [System.Text.Encoding]::ASCII.GetBytes($s)
-    if ($bs.Length -ne 17) { throw ("bad name len: " + $s) }
+    if ($bs.Length -gt 18) { throw ("name too long: " + $s) }
     return ,$bs
 }
 
@@ -67,6 +67,13 @@ $pats += @{ tag="X7"; bcd=0x57; ver="5.7.0"; frames=@($I01,$I07,$I3F); edits=@(
     @{ off=($I01B+5); v=@(0x40,0x08,0x00) }) }                       # P15 byte set (@5=40,@7=00)
 $pats += @{ tag="X8"; bcd=0x58; ver="5.8.0"; frames=@($N05,$I07,$I3F); edits=@(
     @{ off=($N05B+24); v=@(0x90,0x00,0x90,0x00) }) }                 # P23 + norm05 F144 (recheck on new lens)
+# --- 2nd batch after X1~X4 verdicts (M40 round) ---
+$pats += @{ tag="X9";  bcd=0x61; ver="6.1.0"; frames=@($I01,$I07,$I3F); edits=@(
+    @{ off=($I01B+7); v=@(0x7E) }) }                                 # P23 + @7=7E (real-lens value, only free axis left)
+$pats += @{ tag="X10"; bcd=0x62; ver="6.2.0"; frames=@($I01,$I07,$I3F); edits=@(
+    @{ off=($I01B+6); v=@(0x10) }) }                                 # P23 + @6=10 (native; weak-pos on 35mm, untested axis on M40)
+$pats += @{ tag="X11"; bcd=0x63; ver="6.3.0"; frames=@($I08,$I07,$I3F); edits=@(
+    @{ off=($I08B+17); v=@(0x15) }) }                                # P23 + init08[17]=15 ONLY (X4 killed [13]=E1; isolate [17])
 
 $outDir = "d:\work\techart\patches"
 $kitFw = "d:\work\techart\flash_kit\product\firmware\LM-EA9"
@@ -106,7 +113,7 @@ foreach ($p in $pats) {
         $calc = Sum-FrameCk $b $off $len
         if ($stored -ne $calc) { $bad++; Write-Output ($p.tag + " BAD frame@0x" + $off.ToString("X4")) }
     }
-    $pn = [System.Text.Encoding]::ASCII.GetString($b, ($I3FB + 1), 17)
+    $pn = [System.Text.Encoding]::ASCII.GetString($b, ($I3FB + 1), 18)
     Write-Output ($p.tag + " probeBCD=0x" + ([int]$b[$I07B+6]).ToString("X2") + " name=[" + $pn + "] frames_ok=" + (5-$bad) + "/5")
 }
 Write-Output "done"
