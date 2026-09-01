@@ -8,7 +8,7 @@
 
 ## 0. 一句话目标
 
-让 LM-EA9（EF→Sony E 自动对焦转接环）+ 手动/自动单反镜头在索尼机身上**能够出绿框合焦确认**，可接受日常对焦精度下降。
+让 LM-EA9（**徕卡 M → Sony E** 自动对焦转接环）+ M 口手动镜头在索尼机身上**能够出绿框合焦确认**，可接受日常对焦精度下降。
 
 ## 1. 实验环境与症状
 
@@ -287,3 +287,19 @@ native : 55 14 55 14 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 07 80 FF
 
 - 来源：[Tapendra 论文 PDF](https://github.com/Tapendra-195/Sigma_Lens_Control/blob/master/docs/E_Mount_Protocol.pdf)（7.5MB 未入库，文本提取已固化）· [LexOptical Google Doc](https://docs.google.com/document/d/1iw54nzrF0bzQgLINpcP9F8Odd0N5cd7LjlwCDPTNZK0/edit) · [dyxum topic119522](http://www.dyxum.com/dforum/emount-electronic-protocol-reverse-engineering_topic119522) · [dpreview 帖第4页](https://www.dpreview.com/forums/threads/e-mount-reverse-engineering.3872069/page-4) · [LexOptical/E-Mount 源码](https://github.com/LexOptical/E-Mount) · [LexOptical/E-Mount-Traffic-Samples](https://github.com/LexOptical/E-Mount-Traffic-Samples) · [Entropy512/sigrok-dumps](https://github.com/Entropy512/sigrok-dumps)。
 - 技法：**Google Docs 抓取必须 `curl.exe -x http://127.0.0.1:10809 ".../export?format=txt"`**（WebFetch 必失败）；PDF 文本用 python 3.12 + pypdf（pip 亦走代理）；GitHub 检索用 `api.github.com/search/repositories`（免认证可用）逐个翻 contents，优于已失效的 grep.app；GitLab raw 会被 Cloudflare 挑战页拦截。原始工作文件在 `D:\tmp_web\`（仓外，换机即失，故关键文本已固化入 `docs_ref\`）。
+
+## 15. ★焦距设置机制（2026-08-31 从说明书挖出的被忽略通道，可能颠覆 P/X 系列前提）
+
+重读 `TECHART LM-EA9 产品使用说明书.html` 第 103~111 行 + `焦距VS光圈对应关系表.jpg`，发现 LM-EA9 有一套**"用光圈档位当输入通道来告诉接环当前镜头焦距"的机制**，此前所有固件分析都忽略了它：
+
+- **M 口无电子触点**，接环无法自动获知镜头焦距。天工的解法：用户把**机身光圈拨到表里对应 F 值**（F2.8=12mm、F3.2=15mm…F5.6=35mm、**F6.3=40mm**、F8=50mm、F11=80mm…F40=800mm），**按一次快门激活**；"激活后不受关机影响"⇒ 存于环内 NVRAM。
+- 另三个特殊"光圈值"是**功能档**：F45=关机停靠位、F51=常规对焦、F57=慢速对焦（超大光圈头用）。⇒ **§6 悬案"v1.6 删双 profile 后 F57 慢速怎么实现"有了答案：慢速档是运行期由"光圈= F57"这个命令通道切换的内部模式，不在静态帧表里**。
+- 说明书原文（第 108 行）：**"更换镜头时，应确保镜头焦距与设定的焦距相匹配，以保证机身正确的防抖和较为良好的对焦体验。"** ⇒ 官方明确：焦距设错 ⇒ 对焦体验直接劣化。
+- 正常拍摄时机身光圈须留在 F2.0（曝光基准），与 norm05 body[24]=400=F2.0 恒值吻合 ⇒ **norm05 那个 F2.0 是协议约定、不是 bug，这解释了为何 P1/P2/P7 改光圈字段全无反应**（§10 光圈路线关闭的机理根因）。
+
+### 15.1 对当前实验的解释与立即行动
+
+1. **最可能的"40mm 上 P23 无改善"根因**：用户从 35mm 换到 40mm，**若没重设焦距（应拨 F6.3 激活）**，环仍按 35mm 的行程↔距离映射驱动与上报 ⇒ 位置一致性被破坏 ⇒ @5/@7 标定"对不上"是表象，**焦距设错才是底因**。
+2. **零成本判决实验（先于任何刷写）**：装 40mm → 机身光圈拨 F6.3 → 按一次快门 → 保持 F2.0 拍摄 → 用**当前 P23** 复测绿框。若显著改善 ⇒ 大量 init01 爬档可能是在"焦距设错"的偏置下做无谓补偿，须全部在"焦距设对"前提下重做。
+3. **静态表里的焦距痕迹**：init08[20]=0x28=40（此前注"疑 MFD 40mm"）很可能就是**默认焦距=40mm**；norm05 [28..29]=271、量程 4864 等位置参数应与"设定焦距"联动。若 NVRAM 焦距覆盖表内值，则改表无效——需路线 A（伪机身审讯）确认焦距存储位置。
+4. **新 patch 方向（待 #1/#2 结论）**：把 init08[20] 按目标镜头真实焦距设值（如 35→0x23、50→0x32）而非盲改 @5；以及"照抄 native 距离表段 norm05[32+]"（本就是 §14.4 队列、现优先级上调，因其与距离↔位置映射直接相关）。
