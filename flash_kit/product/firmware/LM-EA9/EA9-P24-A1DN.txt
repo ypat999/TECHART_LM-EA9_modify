@@ -1,5 +1,0 @@
-LM-EA9 patch P24 (listed as VER 3.6.0)
-main change: init01 body[1]+body[5]+body[7]: 9F 07 50 -> 17 40 00  [P21 minus one more @1 bit (97->17): keep pushing the fast-focus byte?]
-probe A: device self-read version 1.8 -> 3.6 (init07 BCD nibble)
-probe B: lens name -> "TECHART LM-EA9-P24" (check body lens info / EXIF)
-report: near(1~1.5m) focus speed + hit rate vs P21 (if worse, @1=97 is the sweet spot)

@@ -1,5 +1,0 @@
-LM-EA9 patch P10 (listed as VER 2.2.0)
-main change: init01 body[1] only: 9F -> 97 (single bit3 cleared)  [P3 byte-bisect #1]
-probe A: device self-read version 1.8 -> 2.2 (init07 BCD nibble)
-probe B: lens name -> "TECHART LM-EA9-P10" (check body lens info / EXIF)
-report: near / mid / far-infinity green-box hit rate vs P3

@@ -1,1 +1,0 @@
-TECHART LM-EA9;0483;575A;VER 3.4.0;Copyright TECHART Inc.;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-P22-A7FF.bin;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-P22-A7FF.txt

@@ -1,4 +1,0 @@
-LM-EA9 patch P6 (listed as VER 1.9.0)
-aperture 400->144 (F1.2 reported to body)
-probe A: device self-read version 1.8 -> 1.9 (init07 BCD nibble)
-probe B: lens name -> "TECHART LM-EA9-P6" (check body lens info / EXIF)

@@ -1,2 +1,0 @@
-LM-EA9 patch P2b (listed as VER 1.8.3)
-aperture 400->90  (F0.95 reported to body)

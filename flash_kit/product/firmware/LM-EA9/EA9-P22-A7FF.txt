@@ -1,5 +1,0 @@
-LM-EA9 patch P22 (listed as VER 3.4.0)
-main change: init01 body[7]: 50 -> FF  [beyond-native probe; P20 showed graded monotone toward 00, FF tests signed wrap past 00]
-probe A: device self-read version 1.8 -> 3.4 (init07 BCD nibble)
-probe B: lens name -> "TECHART LM-EA9-P22" (check body lens info / EXIF)
-report: near(1~1.5m) vs P15; expect better if signed, much worse if unsigned (then 00 is optimal)

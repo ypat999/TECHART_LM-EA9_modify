@@ -31,7 +31,7 @@
 | `LM-EA9_firmware\releasenotes\` | 官方更新说明（GBK 短文本；`_extract\releasenotes\*_utf8.txt` 为转码版） |
 | `LM-EA9_firmware\TECHART_LST_原始清单.txt` | 服务器产品清单原文 |
 | `_extract\lex_constants.h` | **native 参照**：LexOptinal E-mount 镜头控制器模板数组（init01/07/08/09/0A/0B/0D/10、norm05/06 完整帧） |
-| `patches\EA9-P*.bin` / `EA9-X*.bin` / `EA9-Y*.bin` / `EA9-Z*.bin` / `EA9-W*.bin` / `EA9-V*.bin` / `EA9-U*.bin` | **74 个自制 patch 固件**（P28+X15+Y3+Z8+W5+V6+U3+T3+S3，见 §10/§11.3j~3s），均 20172B、cksum 已重算、逐帧自校验 PASS；**静态表已收官（§11.3s）：日常档 = V3（VER 10.3.0），下一步 = 路线 B 抓 pogo UART** |
+| `patches\EA9-P*.bin` / `EA9-X*.bin` / ... / `EA9-S*.bin` | 历史共生成 74 个 patch 固件（全量清单与判决见 §10/§11.3j~3s，均可由 `_extract\mk_patch_*.ps1` 再生）。**2026-08-31 收官精简：仓内只保留 3 支——`EA9-P23-A5UP.bin`（35mm 档）、`EA9-S3.bin`（40mm 档=V3 同效、按"相同留新"取最新 VER 13.3.0）、ORIG=官方 1.8.0（回滚）**；flash_kit 生效清单已指向 S3 |
 | `flash_kit\` | **本地刷写套件**：product\ 目录树 + serve.bat + hosts_add/remove/fix.bat + lsts\ 每 patch 一份清单 + HOWTO.txt（清单切换 = 覆盖 product\TECHART_LST.txt；基准档 = P23，VER 3.5.0） |
 | `docs_ref\` | **外网检索固化件**（详见 §14）：LexOptical Google Doc 全文、Tapendra 论文文本提取、LexOptical 镜头侧开源源码全套、sigrok-dumps sony_emount 捕获清单 |
 

@@ -1,2 +1,0 @@
-LM-EA9 patch P5 (listed as VER 1.8.6)
-init08 replaced with native frame (HIGH RISK motor profiles)

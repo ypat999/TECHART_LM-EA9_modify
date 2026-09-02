@@ -1,5 +1,0 @@
-LM-EA9 patch P20 (listed as VER 3.2.0)
-main change: init01 body[7] half value: 50 -> 28  [value-semantics probe: half effect = continuous, full = threshold]
-probe A: device self-read version 1.8 -> 3.2 (init07 BCD nibble)
-probe B: lens name -> "TECHART LM-EA9-P20" (check body lens info / EXIF)
-report: near(1~1.5m) green-box hit rate vs P15 (expect between orig and P15 if continuous)

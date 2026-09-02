@@ -1,2 +1,0 @@
-LM-EA9 patch P3 (listed as VER 1.8.4)
-init01 body replaced with native EA-series values

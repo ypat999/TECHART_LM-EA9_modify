@@ -1,5 +1,0 @@
-LM-EA9 patch P26 (listed as VER 3.8.0)
-main change: init01 body[5]+body[7]: 07 50 -> C0 00  [climb @5 step 2; P25+P26 bracket the optimum in one round]
-probe A: device self-read version 1.8 -> 3.8 (init07 BCD nibble)
-probe B: lens name -> "TECHART LM-EA9-P26" (check body lens info / EXIF)
-report: near(1~1.5m) accuracy + speed + edge vs P23

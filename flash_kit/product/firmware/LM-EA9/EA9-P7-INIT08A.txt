@@ -1,5 +1,0 @@
-LM-EA9 patch P7 (listed as VER 2.0.0)
-main change: init08 body[29..30] 3988 -> 1440 (aperture candidate, ~1000*f^2, F2.0 -> F1.2)
-also carries P1: norm05 400 -> 144 (both aperture fields now say F1.2)
-probe A: device self-read version 1.8 -> 2.0 (init07 BCD nibble)
-probe B: lens name -> "TECHART LM-EA9-P7" (check body lens info / EXIF)

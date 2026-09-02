@@ -1,2 +1,0 @@
-LM-EA9 patch P4 (listed as VER 1.8.5)
-norm05 focus range 4864->5205, 271->272 (native)
