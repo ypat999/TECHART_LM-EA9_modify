@@ -1,0 +1,1 @@
+LM-EA9 focal-decl patch F2 VER 18.2.0 (norm05 40mm->70.0mm, base=V3)
