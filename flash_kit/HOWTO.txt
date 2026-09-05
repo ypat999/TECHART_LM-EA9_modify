@@ -13,7 +13,7 @@ LM-EA9 本地刷写套件（flash_kit）
 （flash_kit\product\... 才是 http://.../product/...）。serve.bat 已按此配置。
 
 【目录】
-product\TECHART_LST.txt            当前生效的固件清单（当前 = P23, VER 3.5.0）
+product\TECHART_LST.txt            当前生效的固件清单（随实测变动，以文件内容为准）
 product\firmware\LM-EA9\*.bin|txt  全部候选固件及说明文件
 lsts\TECHART_LST_P*.txt            每个 patch 一份清单（切换用，只含一行）
 lsts\TECHART_LST_ORIG.txt          官方 v1.8.0（回滚）
@@ -106,16 +106,20 @@ P28  VER 4.0.0  EA9-P28-A5ONLY.bin  = @5=80 单独、@7 保持 50（对照：高
   W3   VER 9.3.0  EA9-W3.bin  Z5 + @2=60 + Y1 双提速  ○待测
   W4   VER 9.4.0  EA9-W4.bin  P23 + init07 @1=02 中间值  ✖已实测M40：无提升 ⇒ @1值域扫尽
   W5   VER 9.5.0  EA9-W5.bin  P23 + init07 @0=00 低于官方  ✖已实测M40：机身不识别接环(握手失败) ⇒ @0=能力位,02即下界,静态收官
-  C0   VER 15.1.0 EA9-C0.bin  ★代码段patch基线：fn@0x6D2C 位置缩放×10 等价重写(movs+muls)  ○现役·先刷(对照组)
-  C1   VER 15.2.0 EA9-C1.bin  位置缩放 ×10->×8   ○现役
-  C2   VER 15.3.0 EA9-C2.bin  位置缩放 ×10->×12  ○现役
-  C3   VER 15.4.0 EA9-C3.bin  位置缩放 ×10->×13  ○现役
+  C0   VER 15.1.0 EA9-C0.bin  ★代码段patch基线：fn@0x6D2C 位置缩放×10 等价重写(movs+muls)  ✔已实测M40：与V3一致 => 代码patch通道清白
+  C1   VER 15.2.0 EA9-C1.bin  位置缩放 ×10->×8   ✖已实测M40：弱一点
+  C2   VER 15.3.0 EA9-C2.bin  位置缩放 ×10->×12  ★已实测M40：边缘似乎强一点(唯一正信号档,待D代判真伪)
+  C3   VER 15.4.0 EA9-C3.bin  位置缩放 ×10->×13  ○已实测M40：无明显差异
      （C 探针读回 15.1~15.4，镜头名 "TECHART LM-EA9-Cn"；base=V3；生成器 _extract\mk_patch_c.py）
      ★★C 世代 = 全项目第一次改固件代码段(各8~10字节diff,6字节在0x6D42)。依据=§17.5：
         上报位置=开环步进账本(0x20000680)×10硬编码。改缩放=直接矫正"环告诉机身镜头在哪"。
-        顺序：C0(对照,应与V3几乎一致) -> C3(上调,因35mm@5有效暗示上报偏小) -> C2 -> C1。
-        判据仍是M40边缘绿框。若C0≉V3 => 代码patch有副作用,全线停,回头查指令语义。
-        刷坏可救(bootloader常驻,ORIG回滚)。
+        判决：曲线 8↓/10基/12↑(似乎)/13平 => N 是活杠杆, 但需 D 世代确认 C2 是峰还是噪声。
+  D1   VER 16.1.0 EA9-D1.bin  位置缩放 ×10->×11  ○现役·先刷(斜率加密,真伪主探针)
+  D2   VER 16.2.0 EA9-D2.bin  位置缩放 ×10->×14  ○现役
+  D3   VER 16.3.0 EA9-D3.bin  位置缩放 ×10->×16  ○现役(2的幂奇袭)
+  D4   VER 16.4.0 EA9-D4.bin  位置缩放 ×10->×20  ○现役(剂量上限探针)
+     （D 探针读回 16.1~16.4，镜头名 "TECHART LM-EA9-Dn"，nibble F1~F4；base=V3；
+       生成器 _extract\mk_patch_d.py；判读规则见研究总结 §11.3w / HOWTO 0a）
   V1   VER 10.1.0 EA9-V1.bin  Y1距离表单测(重验边缘)  ○待测·判据核心
   V2   VER 10.2.0 EA9-V2.bin  Y1 + norm05量程4864->5205  ○待测
   V3   VER 10.3.0 EA9-V3.bin  Y1 + norm05[28..29] 271->272  ○待测
@@ -178,11 +182,14 @@ V16  VER 1.6.0  EA9-VER-1-6-0.bin   官方 1.6.0 原固件（判决实验）
 【验证】
 每个 bin 均为 20172 字节、全帧 checksum 已按破解规则重算（见 _extract\cksum_scan.ps1）。
 
-【建议实验顺序】（2026-09-04 运行时RE后更新 = 现役 C 世代代码段 patch；判据=M40 只测边缘）
-0a) ★现役★ C 世代(首批代码段patch, base=V3, §17.5)：位置账本缩放 ×10 → 等价/×8/×12/×13。
-    顺序 C0(对照) -> C3 -> C2 -> C1。切换：
-      copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_C0.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
-    C0 行为应与 V3 基本一致(它是等价重写)——不一致就说明代码 patch 有暗坑, 停下发我复盘。
+【建议实验顺序】（2026-09-05 C 判决后更新 = 现役 D 世代代码段 patch；判据=M40 只测边缘）
+0a) ★现役★ D 世代(代码段patch, base=V3, §17.5/§11.3w)：位置账本缩放 ×10 → ×11/×14/×16/×20。
+    C 世代判决：C0≡V3(通道清白) / ×8弱 / ×12边缘似乎强 / ×13平 —— D 世代任务=判 ×12 是峰还是噪声。
+    顺序 D1(×11,先刷) -> D2(×14) -> D3(×16) -> D4(×20)。切换：
+      copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_D1.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
+    判读：①×11呈10~12缓坡且×14不衰 => 真趋势, 峰值定在12~16, 下代加密定档;
+          ②×11≈×10且D2~D4全平 => C2判噪声, 缩放轴关闭 => 转"伪造轨迹上报"(研究总结§17.5后记);
+          ③任何档绿框变多, 须确认"绿后真合焦"(MF放大看实焦), 排除假绿。
 0b) 静态表已全收官（研究总结 §11.3v/§17.5 双重钉死）；日常档：35mm=P23、40mm=V3。
 1) 日常档（已可日常使用）：
    - 35mm：EA9-P23-A5UP（VER 3.5.0）—— 35mm 上显著改善
@@ -193,7 +200,7 @@ V16  VER 1.6.0  EA9-VER-1-6-0.bin   官方 1.6.0 原固件（判决实验）
    评估"动态位置回填"可行性（需反汇编 STM32 运行时，高风险）。
    判读依据（§16.1 机身侧源码）：机身每收到 0x06 位置才发一次 0x04 移动，DEL=target−当前 ⇒
    静态位置让机身每步算错移动量。参考捕获样本：docs_ref\camera_sim_backend\、
-   sigrok-dumps（srzip-v2 解析器挂起于 D:\tmp_web\se_parse.py，见研究总结 §16.4）。
+   sigrok-dumps（已复活+全部解码，解析器=_extract\sig_decode.py/sig_stats.py，见研究总结 §17）。
 3) 随时可回滚：lsts\TECHART_LST_ORIG.txt → 刷 VER 1.8.0。
 4) 【2026-08-31 外网检索定案】init01 body 八字节公开无文档（官方规范在 NDA 内），
    我们的实验定性即前沿；"对比度终检关闭位"不存在于任何公开资料（详见研究总结 §14）。
