@@ -210,10 +210,15 @@ V16  VER 1.6.0  EA9-VER-1-6-0.bin   官方 1.6.0 原固件（判决实验）
       copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_J1.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
     [J 已判§11.3ai: J1(112)不稳 J2(96)/J3(144)≈中 J4(128+邻梯度)>=I7"也许更好" => b30 峰=128 坐实]
      [K 已判§11.3aj: K1弱(b33有害) K2正常(b34中性) K3弱(120) K4略强!(136)=>峰右移 128~144]
-     ★现役 L 系(追峰夹逼): L1=b30 84(132) | L2=b30 8C(140) | L3=88+b34 48(136协同探针)
-       copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_L1.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
-     决策树: L1/L2 夹出真峰即定档升 40mm 日常固件; L 全<=I7/K4=>128~136 视为平台, 取 K4 或 I7 定档;
-     之后预案: 运行期"随距离递减"动态表(代码patch) + 28/35 消息补齐 + 作者口径(见 致原作者_评论草稿.txt)。
+     [L 已判§11.3ak: L1/L2 略弱于 K4, L3=K4 => b30 峰=136(0x88)=K4 定档候选]
+     ★现役 M 系(评论区核弹情报=>作者亲口编码结构: 6B两组轮换, 首字节MSB选 1=暗角/0=出瞳;
+      懂哥: b3B是ED位/全幅要9字节不是6/出瞳才轮换。=> EA9 假说布局: 五值放 b38,39,3A,3C,3D,
+      b3B=01与b3E=01=组ID不可动(这正是I1死机元凶: 清了b3B+把0xA0写进b3A翻了MSB), 编码@/64:
+      作者1.24..1.16=4F 4E 4D 4C 4A 全<0x80=MSB自动0=出瞳组, 自洽!)
+      M1=五值正序纯灌 | M3=M1+K4峰136(最大赌注) | M2=逆序 | M4=逆序+136
+        copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_M1.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
+      队列=M1 -> M3 -> M2 -> M4; 若死机=假说错 => 立即重刷 K4(LST_K4)恢复并报告;
+      M 若成: 9字节全幅形态(问懂哥/作者)+随距离动态表; 日常档过渡期用 K4。
     [禁刷清单: I1/I3/I4(死机级,W1区b3B标志被毁) H1(更难)。b2E轴非单调暂弃。]
     H 系已判: H1=合焦更难(机身只认位置"动"!) H2=无显著差异(归档)。
 0a) ★次优先★ H2 -> H1 (E1已测平§11.3ae; E2免测; G/F系关闭。
