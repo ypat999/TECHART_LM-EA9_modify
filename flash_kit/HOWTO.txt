@@ -215,10 +215,13 @@ V16  VER 1.6.0  EA9-VER-1-6-0.bin   官方 1.6.0 原固件（判决实验）
       懂哥: b3B是ED位/全幅要9字节不是6/出瞳才轮换。=> EA9 假说布局: 五值放 b38,39,3A,3C,3D,
       b3B=01与b3E=01=组ID不可动(这正是I1死机元凶: 清了b3B+把0xA0写进b3A翻了MSB), 编码@/64:
       作者1.24..1.16=4F 4E 4D 4C 4A 全<0x80=MSB自动0=出瞳组, 自洽!)
-      M1=五值正序纯灌 | M3=M1+K4峰136(最大赌注) | M2=逆序 | M4=逆序+136
-        copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_M1.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
-      队列=M1 -> M3 -> M2 -> M4; 若死机=假说错 => 立即重刷 K4(LST_K4)恢复并报告;
-      M 若成: 9字节全幅形态(问懂哥/作者)+随距离动态表; 日常档过渡期用 K4。
+      [M 已判§11.3al: 逆序>正序为真(该区确被读)但对K4无稳定净增益; 6B池=APS-C五点形态,
+        全幅9B需帧扩容大改押后 => ★K4(b30=136)正式升 40mm 日常固件★ 生效清单默认=LST_K4]
+     现役收尾探针 N 系(测时临时切, 测完回 K4):
+       N1=逆序但b38留空(排布变体) | N2=K4+b38 CF(MSB=1 选择位存在性:看照片角部明暗是否异常!)
+         copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_N1.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
+       日常回归: copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_K4.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
+     下一梯队: N结果+作者回复 => 随距离动态表(代码层)/9B帧扩容/28消息。M4 若要转正需A/B计数两轮。
     [禁刷清单: I1/I3/I4(死机级,W1区b3B标志被毁) H1(更难)。b2E轴非单调暂弃。]
     H 系已判: H1=合焦更难(机身只认位置"动"!) H2=无显著差异(归档)。
 0a) ★次优先★ H2 -> H1 (E1已测平§11.3ae; E2免测; G/F系关闭。
