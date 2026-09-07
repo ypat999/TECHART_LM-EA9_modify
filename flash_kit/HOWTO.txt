@@ -209,10 +209,11 @@ V16  VER 1.6.0  EA9-VER-1-6-0.bin   官方 1.6.0 原固件（判决实验）
       J1=b30 70(112 更深) | J2=60(96 深界) | J3=90(144 浅控) | J4=80+b33 18+b34 48(组合形态)
       copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_J1.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
     [J 已判§11.3ai: J1(112)不稳 J2(96)/J3(144)≈中 J4(128+邻梯度)>=I7"也许更好" => b30 峰=128 坐实]
-     ★现役 K 系(J4 拆解归因+定峰): K1=80+b33 18 | K2=80+b34 48 | K3=b30 78(120) | K4=b30 88(136)
-       copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_K1.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
-     决策树: K1/K2>=J4=>命中元素确认; K3/K4>I7=>峰在120~136; 全<=I7=>I7 定档升 40mm 日常固件;
-     之后预案: 运行期"随距离递减"动态表(代码patch, 作者真值形态) + 28/35 消息补齐。
+     [K 已判§11.3aj: K1弱(b33有害) K2正常(b34中性) K3弱(120) K4略强!(136)=>峰右移 128~144]
+     ★现役 L 系(追峰夹逼): L1=b30 84(132) | L2=b30 8C(140) | L3=88+b34 48(136协同探针)
+       copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_L1.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
+     决策树: L1/L2 夹出真峰即定档升 40mm 日常固件; L 全<=I7/K4=>128~136 视为平台, 取 K4 或 I7 定档;
+     之后预案: 运行期"随距离递减"动态表(代码patch) + 28/35 消息补齐 + 作者口径(见 致原作者_评论草稿.txt)。
     [禁刷清单: I1/I3/I4(死机级,W1区b3B标志被毁) H1(更难)。b2E轴非单调暂弃。]
     H 系已判: H1=合焦更难(机身只认位置"动"!) H2=无显著差异(归档)。
 0a) ★次优先★ H2 -> H1 (E1已测平§11.3ae; E2免测; G/F系关闭。
