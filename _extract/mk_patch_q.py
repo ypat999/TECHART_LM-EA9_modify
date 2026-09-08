@@ -52,7 +52,36 @@ jobs = [
     # Indistinguishable from V3 => pl[48] is dead static data => I7/K4 were impressions => the pupil
     # axis must be re-established by A/B counting or dropped, and the real work is code-level.
     ("Q6", "29.6.0", 0x48, [(p48, 0x00)],
-     "★LIVENESS PROBE: pl[48]=0x00 (degenerate). Sharp degradation/no-AF => K4 legit; flat => K4 placebo"),
+     "liveness probe: pl[48]=0x00 (degenerate)"),
+    # ---- Q6 VERDICT (user, 2026-09-08): version display showed "48" (=our init07 nibble marker,
+    # so the flash init-frame template IS reaching the body = good self-check channel) but
+    # "对焦没有明显差异" => three readings, all still open:
+    #  (i) pl[48] never reaches the wire (norm05 assembled by code) => I7/K4 were impressions;
+    # (ii) pl[48] reaches it but the body/code treats 0x00 as "use default" (very common!) =>
+    #      my probe value was self-defeating;
+    # (iii) it is live but the AF-impression criterion is too noisy to resolve it.
+    # => Q7/Q8 re-probe with NONZERO absurd values on the whole u16 (both directions), so a
+    # zero-default fallback cannot mask them:
+    #   Q7: pl[48..49] = 02 00  -> u16 2   -> /128 = 0.016 (absurd low, nonzero)
+    #   Q8: pl[48..49] = FF FF  -> u16 65535 -> /128 = 512  (absurd high)
+    # If BOTH are flat => (i) confirmed: the norm05 payload region we have been editing for 6
+    # generations does not reach the body; every I/J/K/L/M/N verdict is void; static work stops.
+    ("Q7", "29.7.0", 0x49, [(p48, 0x02), (p48 + 1, 0x00)],
+     "nonzero absurd-low probe: u16 pl[48..49]=2 (no zero-default escape)"),
+    ("Q8", "29.8.0", 0x4A, [(p48, 0xFF), (p48 + 1, 0xFF)],
+     "absurd-high probe: u16 pl[48..49]=65535"),
+    # ---- ★Canary upgrade: is the norm05 PAYLOAD served from our flash table at all?
+    # F1 wrote focal=280 (28mm) but 28mm is a real EA9 preset -> a "28" readout would be ambiguous
+    # (preset path could produce it). D-gen proved the body displays the ring's focal value
+    # verbatim including off-list numbers (44/56/64/80mm), so use a value NO preset can make:
+    # pl[24..25]=pl[26..27]=137 -> 13.7mm.
+    #   shows 13.7/14 => norm05 payload IS table-sourced => static layer alive, and the aperture /
+    #                    optical-row nulls are per-field runtime writes (targeted code patches);
+    #   still 40      => this field is code-filled (preset path) => static norm05 edits unreliable
+    #                    => I/J/K/L/M/N verdicts treated as unproven, go code-level.
+    ("Q9", "29.9.0", 0x4B, [(N05B + 24, 137 & 0xFF), (N05B + 25, 137 >> 8),
+                            (N05B + 26, 137 & 0xFF), (N05B + 27, 137 >> 8)],
+     "★HARD-READOUT CANARY: declared focal length 400 -> 137 (13.7mm, no preset can produce it)"),
 ]
 
 I07, I07L, I07B = 0x4A38, 43, 0x4A3E
