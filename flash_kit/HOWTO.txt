@@ -224,19 +224,30 @@ V16  VER 1.6.0  EA9-VER-1-6-0.bin   官方 1.6.0 原固件（判决实验）
            V3=A3  Q6=48  Q7=49  Q8=4A  Q9=4B  (O5=3E, K4=30, F1=63)
         Q6 本身"对焦无差别"不能定 pl[48] 死刑: 0x00 很可能被代码当"0=用默认值"兜底(探针设计失误),
         也可能只是印象判据太糊 => 改用非零离谱值重测(Q7/Q8)。
-      ★★★现役队列 = Q9(硬读数, 不测AF) -> Q7 -> Q8 -> 定案:
-        第1步 Q9: 把 norm05 焦距字段 400 改成 137(=13.7mm, 故意选预设档造不出的数)。
-          copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_Q9.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
-          刷完先确认版本显示 4B, 然后只看机身设置界面里的焦距数字:
-            显示 13.7 / 14 => norm05 载荷=模板透传, 静态层活着(光圈/光学行的零值是逐字段运行期写),
-                              接着测 Q7/Q8 判 pl[48], O 系继续;
-            仍显示 40      => 该字段由代码填 => norm05 静态改动整体不可信 => I/J/K/L/M/N 的效果记录
-                              全部降级为"未证实", K4 退役、日常档回 V3, 全面转代码层+向作者求 05 dump。
-        第2步 Q7(pl[48..49]=02 00) / 第3步 Q8(pl[48..49]=FF FF): 判据仍是 AF, 但请用同场景 A/B 交替
-          计数法(Q7 与 V3 交替各 15 次记绿框数), 不要再凭印象——上一轮就是吃了这个亏。
-        日常回归: copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_V3.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
-      [Q1 判决(§11.3ap): 机身光圈显示仍 F2.0 => pl[44]/[46]/[51]/[52] 由开机例程运行期写入,
-       模板不上链 => Q2/Q3/Q5 作废勿刷, Q4 退化成"等于 K4"]
+       ★★★静态层定案(§11.3ar, 2026-09-08): 以 BASE=0x6000(向量表 Reset=0x6145)扫全镜像 ——
+         字面量池 / 7 个候选基址反查 / MOVW-MOVT 拼地址 / 全指令立即数 / ADR PC 相对,
+         对帧模板区(VA 0xA9D4..0xAEF0, 即文件 0x49D4..0x4EF0)的【引用数 = 0】;
+         而 RAM 状态结构被大量引用(0x2000051C x68、0x2000067C x28、0x20000494 x26、0x20000490、
+         0x200003EC...), 且这些引用者的 str/strb 正好落在偏移 24/26/32/36/38/60。
+         => 05/06 载荷是在 RAM 里现拼的, app 根本不读 flash 那张帧表
+         => Q1 平 / Q6 平 都是必然; I/J/K/L/M/N(瞳孔区)、O 系(光学行)、Q 系(光圈家族)的
+            静态 patch 效果记录【全部作废为"未证实"】。
+       ★K4 退役: 日常档退回 V3(下面第 3 条命令)。O 系挂起勿刷(同样是空转)。
+       ★Q9 免测: 焦距显示由环的预设配置路径驱动(用户能用光圈档位切 12/40/75mm 且显示跟随),
+         机身必然仍显示 40 => canary 无信息量(教训: canary 字段必须先确认没有第二条写路径)。
+       ★★现役只剩两支"确认弹"(判据用同场景 A/B 交替各 15 次计数, 不许凭印象):
+         1) Q7: copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_Q7.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
+            (u16 pl[48..49]=0x0002, 非零离谱值; 刷完核对版本显示 49)
+         2) Q8: copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_Q8.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
+            (u16=0xFFFF; 核对版本显示 4A)
+         预期: 两支都平 => 链条闭合, 静态层彻底翻篇; 万一有一支明显变化 => pl[48] 走的是别的通路, 再议。
+       3) 回日常档 V3: copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_V3.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
+       ★铁规矩(§11.3aq①): 每支刷完先核对版本 nibble 再谈结论 —— V3=A3 / Q6=48 / Q7=49 / Q8=4A /
+         Q9=4B / O5=3E / K4=30 / F1=63; 对不上 = 没刷进去, 该轮结论作废。
+       ★下一战场(代码层): 用 06 帧锚点(0x20000494 + 镜像函数 0x6134)同款方法定位 05 帧 RAM 缓冲
+         (候选 0x20000490 / 0x2000051C / 0x200003EC), 改 pl[32..43] 光学行与 pl[44..52] 光圈家族的
+         【写者】; 备用代码空间 @文件 0xA85E(122B)。脚本: _extract/re_ram_state_map.py。
+      [Q1 判决(§11.3ap): 机身光圈显示仍 F2.0 => pl[44]/[46]/[51]/[52] 由运行期写入, 模板不上链]
      K4 真身=pl[48](作者表 UNKNOWN)——我们喂给作者的独有发现(评论草稿末段)。
      下一梯队: O结果 => 0x28消息同区补齐(帧表里有)/pl4-8-22-23-60"动起来"清单(代码层)。
     [禁刷清单: I1/I3/I4(死机级,W1区b3B标志被毁) H1(更难)。b2E轴非单调暂弃。]
