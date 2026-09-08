@@ -217,11 +217,15 @@ V16  VER 1.6.0  EA9-VER-1-6-0.bin   官方 1.6.0 原固件（判决实验）
       作者1.24..1.16=4F 4E 4D 4C 4A 全<0x80=MSB自动0=出瞳组, 自洽!)
       [M 已判§11.3al: 逆序>正序为真(该区确被读)但对K4无稳定净增益; 6B池=APS-C五点形态,
         全幅9B需帧扩容大改押后 => ★K4(b30=136)正式升 40mm 日常固件★ 生效清单默认=LST_K4]
-     现役收尾探针 N 系(测时临时切, 测完回 K4):
-       N1=逆序但b38留空(排布变体) | N2=K4+b38 CF(MSB=1 选择位存在性:看照片角部明暗是否异常!)
-         copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_N1.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
+     [N 系作废勿测! §11.3am 索引制度正: 作者 pl=十进制, 我们 hex b 系全偏24, I/M/N 全打在光圈描述符区]
+     ★★现役 O 系(真光学行首灌, pl32..43=hex b20..2B, 全部真镜头原样字节, 最坏无响应不死机):
+       O5=主攻(Loxia21网格+T0瞳孔行) -> O3(双行selp版) -> O2(仅T0) -> O4(仅T1) -> O1(仅网格)
+         copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_O5.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
        日常回归: copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_K4.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
-     下一梯队: N结果+作者回复 => 随距离动态表(代码层)/9B帧扩容/28消息。M4 若要转正需A/B计数两轮。
+       O 判读: 有任何边缘/速度变化=>模板->帧拷贝链活, 进入精修(真值行选源/随焦动态表代码化);
+       O 全平=>运行期组装不吃模板=>RE 找 #0x26 立即数组装点, 代码 patch 换行。
+     K4 真身=pl[48](作者表 UNKNOWN)——我们喂给作者的独有发现(评论草稿末段)。
+     下一梯队: O结果 => 0x28消息同区补齐(帧表里有)/pl4-8-22-23-60"动起来"清单(代码层)。
     [禁刷清单: I1/I3/I4(死机级,W1区b3B标志被毁) H1(更难)。b2E轴非单调暂弃。]
     H 系已判: H1=合焦更难(机身只认位置"动"!) H2=无显著差异(归档)。
 0a) ★次优先★ H2 -> H1 (E1已测平§11.3ae; E2免测; G/F系关闭。
