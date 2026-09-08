@@ -1,1 +1,1 @@
-LM-EA9 honest aperture decl Q1 VER 28.1.0
+LM-EA9 aperture family Q1 VER 29.1.0

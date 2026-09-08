@@ -1,54 +1,79 @@
-# mk_patch_q.py - Q generation: HONEST APERTURE DECLARATION (user's aperture-sweet-spot observation
-# + author's msg_0x05 field table cross-locked).
-# Facts: pl[44..59]=aperture descriptor, Canon EF convention F=2^((v-8)/16, verified: VX EF50 pl[51]=0x16
-# -> F1.83 = its true max aperture = CERTAIN semantics). EA9 template: pl[44]=0x20(F2.83) pl[46]=0x18(F2.00)
-# pl[51]=0x20(F2.83) -- declares ~F2.8 for ANY mounted lens (35/2.8 legacy). M40 true F5.6 -> v=48=0x30.
-# K-gen lesson (pl51 0x20->0x18 "harmful") re-read: pushing declaration FURTHER from reality hurt =>
-# symmetric prediction: declaring reality (F5.66) should HELP. Also user body-side: AF success peaks at
-# F1.8 set-value on M40 (body strategy input) - independent channel, keep fixed during tests!
+# mk_patch_q.py - Q generation v2: APERTURE DESCRIPTOR FAMILY (rewritten after user clarification)
+#
+# User facts (2026-09-08): (a) the EA9 CANNOT read the physical aperture ring -> the body always
+# receives F2.0; (b) M40 true max aperture is F1.8 or faster; (c) all historical tests ran at F2.0
+# (=> no hidden noise variable, past verdicts stand).
+# Consequence: the "F1.8 > F2.0" sweet spot is a PURE OPTICAL effect, not a declaration effect, so
+# v1's "declare honestly F5.6" premise was wrong (0x30 would be a lie in the narrower direction).
+#
+# Author msg_0x05 aperture table (authoritative):
+#   pl[44] = maximum aperture        EA9 template 0x20 (F2.83), boot widens to 0x18 (F2.00)
+#   pl[46] = pl[44]-8 (one stop wider, all 3 devices that use it)
+#   pl[48] = 0xA0 constant, UNKNOWN  <- our K4 lives here (proven to affect AF speed on M40)
+#   pl[51] = second copy of pl[44]
+#   pl[52] = minimum aperture        EA9 0x50 (F22.6) -> boot 0x70 (F90)
+#   "zeroing these six bytes made an a9 II display F1.0 and refuse to AF at all" => field IS read.
+# Family invariants (from the template): pl[46]=pl[44]-8, pl[51]=pl[44], pl[52]=pl[44]+0x30?
+#   (0x20/0x18/0x20/0x50 -> for max X: pl44=X, pl46=X-8, pl51=X, pl52=X+0x30)
+# K-gen lesson re-read: K1 set pl[51] 0x20->0x18 ALONE => broke the pl[51]==pl[44] invariant =>
+# "harmful" is explained by INCONSISTENCY, not by direction. So Q v2 always writes the whole family.
+#
+# FREE READOUT CHANNEL: unlike focal length / focus distance, the aperture value IS shown live on
+# the body => note the displayed F-number after each flash: it attributes which byte feeds the body.
 import struct, shutil, os
 
 BIN = r"d:\work\techart\patches\EA9-V3.bin"
 d0 = open(BIN, "rb").read()
 assert len(d0) == 20172
 N05B = 0x4B82
-p44, p46, p48, p51 = N05B+44, N05B+46, N05B+48, N05B+51
-assert d0[p44] == 0x20 and d0[p46] == 0x18 and d0[p48] == 0xA0 and d0[p51] == 0x20
-
-V566 = 0x30   # F5.66  (M40 truth)
-V734 = 0x36   # F7.34  (bracket overshoot)
+p44, p46, p48, p51, p52 = N05B+44, N05B+46, N05B+48, N05B+51, N05B+52
+assert (d0[p44], d0[p46], d0[p48], d0[p51], d0[p52]) == (0x20, 0x18, 0xA0, 0x20, 0x50)
+F = lambda v: 2 ** ((v - 8) / 16.0)
 
 jobs = [
-    ("Q1", "28.1.0", 0x3F, [(p51, V566)]),                                   # honest max-aperture decl
-    ("Q2", "28.2.0", 0x40, [(p51, V566), (p44, V566), (p46, V566)]),         # full triple alignment
-    ("Q3", "28.3.0", 0x41, [(p51, V734)]),                                   # bracket (overshoot)
-    ("Q4", "28.4.0", 0x42, [(p51, V566), (p48, 0x88)]),                      # honest + K4 live byte = final recipe candidate
+    ("Q1", "29.1.0", 0x43, [(p44, 0x16), (p46, 0x0E), (p51, 0x16), (p52, 0x46)],
+     "family: declare F1.83 (=M40 true max / optical sweet spot)"),
+    ("Q2", "29.2.0", 0x44, [(p44, 0x10), (p46, 0x08), (p51, 0x10), (p52, 0x40)],
+     "family: declare F1.41 (faster-than-truth; if M40 is a 1.4 lens this is the honest value)"),
+    ("Q3", "29.3.0", 0x45, [(p44, 0x28), (p46, 0x20), (p51, 0x28), (p52, 0x58)],
+     "family: declare F4.00 (declared NARROWER = predicted worse => falsification control)"),
+    ("Q4", "29.4.0", 0x46, [(p44, 0x16), (p46, 0x0E), (p51, 0x16), (p52, 0x46), (p48, 0x88)],
+     "Q1 family + K4(pl48=88) = final recipe candidate"),
+    ("Q5", "29.5.0", 0x47, [(p46, 0x16)],
+     "single-point attribution: only pl[46] -> F1.83 (pl[44] stays F2.83) - display value tells who feeds the body"),
 ]
 
 I07, I07L, I07B = 0x4A38, 43, 0x4A3E
 I3F, I3FL, I3FB = 0x4C08, 74, 0x4C0E
 
+
 def sum_ck(a, off, ln):
     return sum(a[off+1: off+ln-3]) & 0xFFFF
 
+
 def write_ck(a, off, ln):
     c = sum_ck(a, off, ln)
-    a[off+ln-3] = c & 0xFF; a[off+ln-2] = (c >> 8) & 0xFF
+    a[off+ln-3] = c & 0xFF
+    a[off+ln-2] = (c >> 8) & 0xFF
+
 
 os.makedirs(r"d:\work\techart\flash_kit\product\firmware\LM-EA9", exist_ok=True)
-for tag, ver, nib, edits in jobs:
+for tag, ver, nib, edits, note in jobs:
     a = bytearray(d0)
     for off, bv in edits:
         a[off] = bv
     a[I07B+6] = nib
     raw = b"TECHART LM-EA9-" + tag.encode()
     a[I3FB+1:I3FB+19] = raw + bytes(18 - len(raw))
-    write_ck(a, I07, I07L); write_ck(a, I3F, I3FL); write_ck(a, N05B - 6, 105)
+    write_ck(a, I07, I07L)
+    write_ck(a, I3F, I3FL)
+    write_ck(a, N05B - 6, 105)
     fn = "EA9-%s.bin" % tag
     open(r"d:\work\techart\patches" + "\\" + fn, "wb").write(bytes(a))
-    shutil.copy(r"d:\work\techart\patches" + "\\" + fn, r"d:\work\techart\flash_kit\product\firmware\LM-EA9" + "\\" + fn)
+    shutil.copy(r"d:\work\techart\patches" + "\\" + fn,
+                r"d:\work\techart\flash_kit\product\firmware\LM-EA9" + "\\" + fn)
     open(r"d:\work\techart\flash_kit\product\firmware\LM-EA9" + "\\" + fn.replace(".bin", ".txt"), "w").write(
-        "LM-EA9 honest aperture decl %s VER %s" % (tag, ver))
+        "LM-EA9 aperture family %s VER %s" % (tag, ver))
     lst = ("TECHART LM-EA9;0483;575A;VER %s;Copyright TECHART Inc.;"
            "http://www.techart-logic.com/product/firmware/LM-EA9/%s;"
            "http://www.techart-logic.com/product/firmware/LM-EA9/%s") % (ver, fn, fn.replace(".bin", ".txt"))
@@ -58,5 +83,7 @@ for tag, ver, nib, edits in jobs:
     diff = sum(1 for x, y in zip(d0, b) if x != y)
     ok_ck = all(sum_ck(b, off, ln) == struct.unpack_from("<H", b, off+ln-3)[0]
                 for off, ln in ((I07, I07L), (I3F, I3FL), (N05B - 6, 105)))
-    print("%s ver=%s diff=%d ck_ok=%s  pl44=%02X pl46=%02X pl48=%02X pl51=%02X" % (tag, ver, diff, ok_ck,
-          b[p44], b[p46], b[p48], b[p51]))
+    print("%s ver=%s diff=%2d ck_ok=%s | pl44=%02X(%s) pl46=%02X(%s) pl48=%02X pl51=%02X(%s) pl52=%02X(%s)  # %s" % (
+        tag, ver, diff, ok_ck,
+        b[p44], "F%.2f" % F(b[p44]), b[p46], "F%.2f" % F(b[p46]), b[p48],
+        b[p51], "F%.2f" % F(b[p51]), b[p52], "F%.2f" % F(b[p52]), note))
