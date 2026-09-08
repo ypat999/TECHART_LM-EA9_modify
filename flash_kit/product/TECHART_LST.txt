@@ -1,1 +1,1 @@
-TECHART LM-EA9;0483;575A;VER 27.5.0;Copyright TECHART Inc.;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-O5.bin;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-O5.txt
+TECHART LM-EA9;0483;575A;VER 25.4.0;Copyright TECHART Inc.;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-M4.bin;http://www.techart-logic.com/product/firmware/LM-EA9/EA9-M4.txt

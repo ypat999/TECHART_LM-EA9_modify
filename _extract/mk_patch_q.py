@@ -41,6 +41,18 @@ jobs = [
      "Q1 family + K4(pl48=88) = final recipe candidate"),
     ("Q5", "29.5.0", 0x47, [(p46, 0x16)],
      "single-point attribution: only pl[46] -> F1.83 (pl[44] stays F2.83) - display value tells who feeds the body"),
+    # ---- Q1 VERDICT (user, 2026-09-08): body STILL shows F2.0 after Q1 => the displayed max
+    # aperture is NOT fed by any byte we can reach statically. Flash image scan (re_aperture2/3.py):
+    # the family copy exists exactly ONCE (@0x4BAE) and the widened pair 0x18/0x70 is nowhere in the
+    # image => the ring's code recomputes pl[44]/pl[51] (and pl[52]) at runtime; author's own capture
+    # agrees (table 0x20/0x50 vs wire 0x18/0x70). So: which offsets are table-sourced and survive onto
+    # the wire? pl[48] is our only alleged hit (I7/K4) and the whole "pupil axis" rests on it.
+    # Q6 = liveness-or-placebo probe on that byte: degenerate 0x00 (author: zeroing this region made
+    # an a9 II refuse to AF at all). CLEAR degradation/no-AF => pl[48] is wire-live => I7/K4 legit.
+    # Indistinguishable from V3 => pl[48] is dead static data => I7/K4 were impressions => the pupil
+    # axis must be re-established by A/B counting or dropped, and the real work is code-level.
+    ("Q6", "29.6.0", 0x48, [(p48, 0x00)],
+     "★LIVENESS PROBE: pl[48]=0x00 (degenerate). Sharp degradation/no-AF => K4 legit; flat => K4 placebo"),
 ]
 
 I07, I07L, I07B = 0x4A38, 43, 0x4A3E
