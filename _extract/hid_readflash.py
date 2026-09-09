@@ -16,7 +16,9 @@ import os
 import hid
 
 VID, PID = 0x0483, 0x575A
-BASE = 0x08006000                      # 我们镜像在 flash 里的假定基址(由 ReadTable 守卫 0x08006320 旁证)
+# 反编译 upx_dectl 实证: ReadFirmwareFromAdapter(0x08005000) / WriteDataToAdapter(0x08005000)
+# (见 usbHID_DataReceived4ReadTable/Firmware 里的 ldc.i4 0x8005000) => 固件基址 0x08005000
+BASE = 0x08005000
 PATCH_DIR = r"d:\work\techart\patches"
 OUT = r"d:\work\techart\_extract\ringflash.bin"
 
@@ -43,28 +45,28 @@ def known_bytes(addr, ln):
     return out
 
 
-def make_report(cls, seq, typ, addr, ln=0x0040):
-    """[0]=report id 0, [1..5]=帧头(F0,len2,cls,seq,typ) 的候选拼装; addr 放在 [6..9]"""
-    r = bytearray(64)
-    r[1] = 0xF0
-    r[2] = ln & 0xFF
-    r[3] = (ln >> 8) & 0xFF
-    r[4] = cls
-    r[5] = seq
-    r[6] = typ
+# 真正报文头由反编译 upx 得到: field 0x15 / check_tab / spy_tab / state 都是
+# 6 字节魔术头 95 27 68 18 XX XX (尾部两字节区分命令)。addr 放在报文 [6..9]。
+MAGIC = bytes.fromhex("95276818")
+TAILS = [(a, b) for a in (0x00, 0x01, 0x02, 0x03) for b in (0x00, 0x01, 0x02, 0x03)]
+
+
+def make_report(t0, t1, addr):
+    """线格式: [0]=reportID 0, [1..6]=6B 魔术头, [7..10]=addr(LE32)"""
+    r = bytearray(65)
+    r[1:5] = MAGIC
+    r[5] = t0
+    r[6] = t1
     r[7:11] = struct.pack("<I", addr)
     return bytes(r)
 
 
-def make_report2(cls, typ, addr, ln=0x0040):
-    """变体: 帧头 6 字节直接放 [0..5](无 report id), 地址放 [6..9] —— 与 IL 完全一致"""
+def make_report2(t0, t1, addr):
+    """变体: 无 report-id 前缀, 64 字节报文, 头在 [0..5], addr 在 [6..9]"""
     r = bytearray(64)
-    r[0] = 0xF0
-    r[1] = ln & 0xFF
-    r[2] = (ln >> 8) & 0xFF
-    r[3] = cls
-    r[4] = typ
-    r[5] = 0x00
+    r[0:4] = MAGIC
+    r[4] = t0
+    r[5] = t1
     r[6:10] = struct.pack("<I", addr)
     return bytes(r)
 
@@ -91,51 +93,51 @@ def main():
         dev.set_nonblocking(0)
     except Exception:
         pass
-    print("已连接:", dev.get_product_string(), "|", dev.get_serial_string())
+    print("已连接:", dev.get_product_string(), "|", dev.get_serial_number_string())
     addr = BASE
-    cands = []
-    for cls in (0x01, 0x02, 0x00):
-        for typ in range(0x00, 0x100):
-            cands.append(("f1", cls, 0x00, typ))
-    tried = 0
-    for kind, cls, seq, typ in cands:
-        pkt = make_report(cls, seq, typ, addr)
+    # 真实候选帧头(反编译 IL 实证): 03 03=spy_tab(读), 01 01=check_tab(握手), 02 02=state
+    heads = {
+        (0x03, 0x03): "spy_tab(读)",
+        (0x01, 0x01): "check_tab(握手)",
+        (0x02, 0x02): "state",
+        (0x00, 0x00): "0000",
+    }
+    echo_cnt = 0
+    total = 0
+    for t0, t1 in heads:
+        pkt = make_report(t0, t1, addr)   # Windows 上唯一有效布局: [0]=reportID0 + 64B 载荷
         try:
             dev.write(pkt)
         except Exception as e:
             print("写失败:", e)
             return 3
-        tried += 1
+        total += 1
         try:
-            r = dev.read(64, 120)
+            r = dev.read(64, 250)
         except Exception:
             r = None
-        if r:
-            reply = bytes(r)
-            if reply.strip(b"\x00"):
-                tag, off = match_reply(reply, addr)
-                print("  有回复 cls=%02X typ=%02X  %s  %s" % (
-                    cls, typ, reply.hex(" ")[:96], ("<== 命中镜像 %s @%d" % (tag, off)) if tag else ""))
-                if tag:
-                    print("  ★读通了! 用: python _extract\\hid_readflash.py --dump")
-                    return 0
-        if tried % 64 == 0:
-            print("  ...已试 %d 个帧头组合" % tried)
-    # 变体 2
-    print("--- 换无 report-id 布局再试 ---")
-    for cls in (0x01, 0x02):
-        for typ in range(0x00, 0x100):
-            dev.write(make_report2(cls, typ, addr))
-            r = dev.read(64, 120)
-            if r:
-                reply = bytes(r)
-                if reply.strip(b"\x00"):
-                    tag, off = match_reply(reply, addr)
-                    print("  有回复 cls=%02X typ=%02X  %s  %s" % (
-                        cls, typ, reply.hex(" ")[:96], ("<== 命中镜像 %s @%d" % (tag, off)) if tag else ""))
-                    if tag:
-                        return 0
-    print("全部组合无有效回复 => 环当前不在可审讯模式(或需要先按升级程序的按钮)。")
+        if not r:
+            continue
+        reply = bytes(r)
+        if not reply.strip(b"\x00"):
+            continue
+        tag, off = match_reply(reply, addr)
+        payload = pkt[1:65]
+        is_echo = reply[:10] == payload[:10]
+        if is_echo:
+            echo_cnt += 1
+        print("  %-14s %s  %s" % (
+            heads[(t0, t1)], reply.hex(" ")[:60],
+            ("★命中镜像 %s @%d" % (tag, off)) if tag else ("(纯回显)" if is_echo else "(非回显,需细看)")))
+        if tag:
+            print("  ★读通了! 用: python _extract\\hid_readflash.py --dump")
+            return 0
+    if total and echo_cnt == total:
+        print("\n=> 设备对每条命令都逐字节原样回显 = 环在【应用固件 echo 模式】, "
+              "未进入能服务 95 27 68 18 协议的 bootloader 模式。")
+        print("   官方升级程序能读回版本, 说明它有一个'把环切进 bootloader'的触发(底座/按键/首包)。")
+    else:
+        print("\n=> 混合响应(部分非回显), 需抓包核对(%d/%d 回显)。" % (echo_cnt, total))
     return 1
 
 

@@ -24,6 +24,19 @@ LM-EA9 M口转接环固件修改  -  换机交接 & 下一步行动计划
      读通后三件事立刻有答案: (a) 每支 patch 到底有没有落进 flash; (b) 环存"镜头预设"的那块在哪
      (机身显示 F2.0/40mm 的真来源, 很可能才是该改的地方); (c) 运行期发送缓冲 vs 模板 = 逐字节
      看清哪些字段被代码覆写。
+     ★★2026-09-09 定论(frida 挂钩官方升级程序 WriteFile/ReadFile 抓到真实流量):
+       (A) 刷写=纯写, 协议已 100% 破解: 环 HID 句柄上依次
+           1) 00 95 27 68 18 02 02 <全零>            (state 解锁/进模式)
+           2) 00 95 27 68 18 01 01 19 04 00 00 <零>  (check_tab + 参数 0x419)
+           3) 00 <64B 固件块0> / 00 <64B 块1> / ...   (reportID 0 + 64 数据, 顺序裸流, 无地址)
+           => 可据此写一个纯 python 离线刷写器(不必再靠 hosts+serve+官方程序)。
+       (B) 读回通道=此路不通: 官方程序全程对环句柄 0 次读、0 次 spy_tab(03 03); 它"启动读一遍
+           确认接环"是在【另一个句柄】读到 `a5 2b 33 01 0f .. 40 00 00 00 40 00 00 00 ..`(=HID
+           能力/结构, 两个 64=输入/输出报告长度), 不是环 flash。python 干净读环(不写)啥也读不到,
+           发 spy_tab+addr 只拿回自己写的 echo => 环固件/bootloader 不支持 USB flash 读回。
+       => §-1 第 1 步"读回 flash"目标判定为【不可达】(固件层没实现读服务), 后续会话别再追;
+          原计划的(a)验证 patch 落盘改用"刷完看机身显示版本 nibble"这条已够; (b)镜头预设块
+          只能靠作者 dump 或路线 B 抓 pogo 线。(C)运行期缓冲 vs 模板同理拿不到。
   2) 硬读数探针 Q9(不测 AF): copy /y "d:\work\techart\flash_kit\lsts\TECHART_LST_Q9.txt" "d:\work\techart\flash_kit\product\TECHART_LST.txt"
      刷完先核对版本显示 = 4B, 再看机身设置界面里的焦距数字: 13.7/14 => norm05 载荷透传成立(静态层
      有效); 仍 40 => 该字段由代码/预设填(残留歧义见 §11.3at)。
@@ -114,10 +127,28 @@ LM-EA9 M口转接环固件修改  -  换机交接 & 下一步行动计划
   sigrok 解码: sig_pupil.py(瞳孔区提取) / sig_rows.py(6 字节 block-float 行解码 + 锚点自校)
   升级程序逆向: upx_strings.py(字符串) / upx_dectl.py(指定方法 IL 反汇编) / upx_field_xref.py
                (按字段 token 反查谁在构造报文) -> 已还原读回通道报文格式
-  硬件审讯:    hid_readflash.py(**待跑**: 自校验暴力试帧头读回 flash; --dump 预留)
+               upx_fields.py(列 Field 表+FieldRVA blob) / upx_initarr.py(还原 InitializeArray
+               的常量数组字节) / upx_dectl2.py(按字段 token 或方法名完整 dump IL, 自动写
+               dectl_out.txt 绕开 PS5 管道吞输出) / upx_seq.py(按方法名 dump 全 IL)
+  ★★真实 HID 读回协议(2026-09-09 反编译 IL 实锤, 覆盖 §-1/§11.3as 里"F0+长度+class"的旧猜测):
+     64 字节逻辑报文, Windows 线格式 = [0]=reportID 0x00 + [1..64]=载荷。载荷布局:
+       载荷[0..5] = 6 字节魔术头 95 27 68 18 <c0> <c1>
+       载荷[6..9] = u32 地址 (LE)
+     命令字节 (c0,c1): check_tab=01 01(握手/解锁首包) | state=02 02 | spy_tab=03 03(读)
+     固件基址 = 0x08005000 (IL: ReadFirmwareFromAdapter(0x8005000)/WriteDataToAdapter(0x8005000))
+     配置表基址 = 0x08004000 (IL: btn_cfg_Click 里 ldc.i4 0x8004000)
+     读回守卫: addr<=0x08014000(全片) / ReadTable addr<=0x08006320
+     应答分派: TypeOfData 静态码 0=ReadTable 1=ReadFirmware 2=WriteFirmware 3=Config
+  硬件审讯:    hid_readflash.py(协议已修正但读回不可达, 见下) / hid_probe*.py(定点探测若干, 均回显)
+  ★★frida 动态抓取(2026-09-09 破案主力, 已定论): run_hook.py(frida 拉起官方程序) +
+     hid_hook.js(hook kernel32 WriteFile/ReadFile/GetOverlappedResult/DeviceIoControl, 只记
+     64/65B 报文+句柄) + parse_hidlog.py / parse_head.py / peek.py(解析 hidlog.txt)。
+     结论: 刷写=纯写(state 02 02 -> check_tab 01 01 19 04 00 00 -> 64B 固件裸块顺序流, 无地址);
+     环句柄全程 0 读; 官方"启动读一遍"在另一句柄读到 HID 能力结构(a5 2b 33..40 00 00 00 40..),
+     不是 flash => 环固件不支持 USB flash 读回。pip 依赖新增 frida。
   小红书提取:  xhs_extract2.py(strip tags+CJK 行过滤, 成功法) / xhs_extract.py(JSON desc, 失败法)
   EXIF:        focus_exif.py / exif_dump.py / exif_diff.py(结论: A7R3 对任何镜头都不写物距)
-  pip 依赖:    dnfile dncil hidapi capstone  (都已装; 换机后 pip install 一次)
+  pip 依赖:    dnfile dncil hidapi capstone frida  (都已装; 换机后 pip install 一次)
   刷写:        flash_kit\HOWTO.txt 是唯一操作手册; 切清单=copy lsts\TECHART_LST_X.txt 覆盖
                product\TECHART_LST.txt, 再跑升级程序(hosts 劫持 + serve.bat 起本地 HTTP:80)。
 
@@ -134,6 +165,11 @@ LM-EA9 M口转接环固件修改  -  换机交接 & 下一步行动计划
   8) 提交信息里带双引号会被 PowerShell 拆成多个 pathspec => 一律走 -F 文件。
   9) 扫描器结论为"0 命中"时先怀疑自己的窗口/编码算错了(re_movw_scan 与"静态层已死"就是这么来的)。
  10) 下结论前先查仓内旧记录: Q1 的结论其实作者库 + 我们自己的 P 表早就给过线索(只是 P 表误标了字段)。
+ 11) 读回通道(hid_readflash.py)两个坑(2026-09-09): (a) 帧头不是 E-mount 的 `F0 len class seq type`,
+     而是自定义魔术头 `95 27 68 18` + 2 命令字节 + u32 地址@载荷[6..9]; 基址 0x08005000 不是 0x08006000。
+     (b) 环 USB 直连 PC 时跑的是**应用固件**, 它对任意 HID 写**逐字节原样回显**(echo), 不服务 bootloader
+     读命令 => 读回前必须先把环切进"可刷写/bootloader 模式"(官方程序能读回版本说明存在此触发)。
+     判据: 若应答==请求载荷(含我们塞进去的 addr 原样返回) = echo 模式, 不是真读回。
 
 【0d. 开放问题（新对话开局该问/该查的）】
   Q1 待用户回答: ①M40 镜身铭牌的**确切**最大光圈(1.2/1.4/1.7/1.8?) —— 决定 Q2/F1.8 系"诚实值"取多少;

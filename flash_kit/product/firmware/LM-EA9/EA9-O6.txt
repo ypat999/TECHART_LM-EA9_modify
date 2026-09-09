@@ -1,0 +1,1 @@
+LM-EA9 principled optical O6 VER 27.6.0 (Voigt40/1.2: slotA 55mm-grid, slotB type0 pupil p)
